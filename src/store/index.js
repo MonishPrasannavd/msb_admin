@@ -1,0 +1,10 @@
+import { createStore } from 'vuex'
+import auth from './modules/auth'
+import quiz from './modules/quiz'
+
+export default createStore({
+  modules: {
+    auth,
+    quiz
+  }
+}) 
