@@ -18,7 +18,9 @@ import {
     faPencil,
     faChevronDown,
     faRightFromBracket,
-    faUser
+    faUser,
+    faShieldHalved,
+    faFileContract
 } from '@fortawesome/free-solid-svg-icons'
 
 /* add icons to the library */
@@ -35,7 +37,9 @@ library.add(
     faPencil,
     faChevronDown,
     faRightFromBracket,
-    faUser
+    faUser,
+    faShieldHalved,
+    faFileContract
 )
 
 export { FontAwesomeIcon } 

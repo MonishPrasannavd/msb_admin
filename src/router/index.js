@@ -44,6 +44,18 @@ const routes = [
     name: 'EditQuiz',
     component: () => import('../views/quiz/EditQuizPage.vue'),
     meta: { requiresAuth: true }
+  },
+  {
+    path: '/privacy-policy',
+    name: 'PrivacyPolicy',
+    component: () => import('../views/legal/PrivacyPolicyPage.vue'),
+    meta: { requiresAuth: true }
+  },
+  {
+    path: '/terms-and-conditions',
+    name: 'TermsAndConditions',
+    component: () => import('../views/legal/TermsAndConditionsPage.vue'),
+    meta: { requiresAuth: true }
   }
 ]
 

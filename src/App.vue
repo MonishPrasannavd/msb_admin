@@ -98,7 +98,29 @@ export default {
             </template>
           </v-list-item>
 
-         
+          <v-list-item
+            prepend-icon="mdi-shield-lock"
+            title="Privacy Policy"
+            to="/privacy-policy"
+            class="rounded-lg mb-2"
+            active-color="success"
+          >
+            <template v-slot:prepend>
+              <font-awesome-icon icon="fa-solid fa-shield-halved" class="mr-2" />
+            </template>
+          </v-list-item>
+
+          <v-list-item
+            prepend-icon="mdi-file-document"
+            title="Terms & Conditions"
+            to="/terms-and-conditions"
+            class="rounded-lg mb-2"
+            active-color="success"
+          >
+            <template v-slot:prepend>
+              <font-awesome-icon icon="fa-solid fa-file-contract" class="mr-2" />
+            </template>
+          </v-list-item>
         </v-list>
 
         <!-- <template v-slot:append>
