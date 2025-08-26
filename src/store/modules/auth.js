@@ -29,13 +29,18 @@ const actions = {
       
       return new Promise((resolve) => {
         setTimeout(() => {
-          if (credentials.email === 'monishvd@gmail.com' && credentials.password === 'Monish@123') {
+          // For demo purposes, accept any valid email format and password with at least 6 characters
+          const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+          const isValidEmail = emailRegex.test(credentials.email)
+          const isValidPassword = credentials.password && credentials.password.length >= 6
+          
+          if (isValidEmail && isValidPassword) {
             const mockResponse = {
-              token: 'mock-jwt-token',
+              token: 'mock-jwt-token-' + Date.now(),
               user: {
                 id: 1,
                 email: credentials.email,
-                name: 'Admin User'
+                name: credentials.email.split('@')[0] // Use email prefix as name
               }
             }
             
@@ -46,7 +51,13 @@ const actions = {
             commit('setLoading', false)
             resolve(mockResponse)
           } else {
-            throw new Error('Invalid email or password')
+            if (!isValidEmail) {
+              throw new Error('Please enter a valid email address')
+            } else if (!isValidPassword) {
+              throw new Error('Password must be at least 6 characters long')
+            } else {
+              throw new Error('Invalid email or password')
+            }
           }
         }, 1000)
       })

@@ -46,6 +46,21 @@ const routes = [
     meta: { requiresAuth: true }
   },
   {
+    path: '/talents',
+    redirect: '/'
+  },
+  {
+    path: '/talents/:id',
+    name: 'TalentView',
+    component: () => import('../views/talent/TalentViewPage.vue'),
+    meta: { requiresAuth: true }
+  },
+  {
+    path: '/talents/:talentId/sub-talents/:subTalentId',
+    name: 'SubTalentView',
+    component: () => import('../views/talent/SubTalentViewPage.vue')
+  },
+  {
     path: '/privacy-policy',
     name: 'PrivacyPolicy',
     component: () => import('../views/legal/PrivacyPolicyPage.vue'),

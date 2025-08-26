@@ -20,7 +20,16 @@ import {
     faRightFromBracket,
     faUser,
     faShieldHalved,
-    faFileContract
+    faFileContract,
+    faUsers,
+    faArrowLeft,
+    faClock,
+    faArrowUp,
+    faCheckCircle,
+    faArrowDown,
+    faGraduationCap,
+    faPalette,
+    faTrophy
 } from '@fortawesome/free-solid-svg-icons'
 
 /* add icons to the library */
@@ -39,7 +48,16 @@ library.add(
     faRightFromBracket,
     faUser,
     faShieldHalved,
-    faFileContract
+    faFileContract,
+    faUsers,
+    faArrowLeft,
+    faClock,
+    faArrowUp,
+    faCheckCircle,
+    faArrowDown,
+    faGraduationCap,
+    faPalette,
+    faTrophy
 )
 
 export { FontAwesomeIcon } 

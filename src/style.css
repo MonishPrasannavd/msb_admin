@@ -27,7 +27,8 @@ body {
   padding: 0;
   min-width: 100vw;
   min-height: 100vh;
-  overflow: hidden;
+  overflow-x: hidden;
+  overflow-y: auto;
   color: #333333;
   font-family: 'Poppins', sans-serif;
 }
@@ -94,5 +95,22 @@ input {
   }
 }
 ::-webkit-scrollbar {
-  display: none;
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #c1c1c1;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #a8a8a8;
+}
+.v-navigation-drawer__content::-webkit-scrollbar{
+  display: none !important;
 }

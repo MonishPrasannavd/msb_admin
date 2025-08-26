@@ -66,6 +66,7 @@
               block
               :loading="loading"
               :disabled="loading || !isFormValid"
+              class="login-btn"
             >
               <template v-if="loading">
                 <v-progress-circular
@@ -117,10 +118,7 @@ export default {
       ],
       passwordRules: [
         v => !!v || 'Password is required',
-        v => v.length >= 6 || 'Password must be at least 6 characters long',
-        v => /[A-Z]/.test(v) || 'Password must contain at least one uppercase letter',
-        v => /[a-z]/.test(v) || 'Password must contain at least one lowercase letter',
-        v => /[0-9]/.test(v) || 'Password must contain at least one number'
+        v => v.length >= 6 || 'Password must be at least 6 characters long'
       ]
     }
   },
@@ -165,21 +163,6 @@ export default {
       
       if (this.password.length < 6) {
         this.passwordError = 'Password must be at least 6 characters long'
-        return false
-      }
-      
-      if (!/[A-Z]/.test(this.password)) {
-        this.passwordError = 'Password must contain at least one uppercase letter'
-        return false
-      }
-      
-      if (!/[a-z]/.test(this.password)) {
-        this.passwordError = 'Password must contain at least one lowercase letter'
-        return false
-      }
-      
-      if (!/[0-9]/.test(this.password)) {
-        this.passwordError = 'Password must contain at least one number'
         return false
       }
       
@@ -348,5 +331,11 @@ export default {
   color: white;
   font-size: 14px;
   opacity: 1;
+}
+
+.login-btn:hover{
+  color: #4CAF50 !important;
+  border: 2px solid #4CAF50 !important;
+  /* box-shadow: none !important; */
 }
 </style> 

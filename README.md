@@ -92,3 +92,15 @@ Each line contains:
   - `/store` - Vuex state management
   - `/router` - Vue Router configuration
   - `/assets` - Static assets
+
+
+  Creadentials:
+
+  Email: admin@example.com
+Password: 123456
+
+Email: user@gmail.com  
+Password: password
+
+Email: test@test.com
+Password: simple123
