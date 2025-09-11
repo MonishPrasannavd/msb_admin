@@ -127,7 +127,7 @@ export default {
           this.successMessage = response.message
           this.passwordReset = true
         } catch (error) {
-          // Error is handled by the store
+          // Error is handled by the stores
         }
       }
     }

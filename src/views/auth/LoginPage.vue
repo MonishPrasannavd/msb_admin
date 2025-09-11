@@ -4,85 +4,85 @@
       <v-col cols="12" md="6" class="login-form">
         <div class="form-content">
           <div class="logo">Msb<span class="dot">.</span></div>
-          
+
           <h1 class="welcome-text">Welcome</h1>
           <p class="login-text">Login</p>
-          
+
           <v-form @submit.prevent="handleLogin" ref="form">
             <v-text-field
-              v-model="email"
-              :error-messages="emailError"
-              label="Email"
-              prepend-inner-icon="mdi-email"
-              type="email"
-              variant="outlined"
-              class="mb-4"
-              :rules="emailRules"
-              @blur="validateEmail"
-              required
+                v-model="email"
+                :error-messages="emailError"
+                label="Email"
+                prepend-inner-icon="mdi-email"
+                type="email"
+                variant="outlined"
+                class="mb-4"
+                :rules="emailRules"
+                @blur="validateEmail"
+                required
             ></v-text-field>
-            
+
             <v-text-field
-              v-model="password"
-              :error-messages="passwordError"
-              label="Password"
-              prepend-inner-icon="mdi-lock"
-              :append-inner-icon="showPassword ? 'mdi-eye' : 'mdi-eye-off'"
-              :type="showPassword ? 'text' : 'password'"
-              variant="outlined"
-              class="mb-4"
-              :rules="passwordRules"
-              @blur="validatePassword"
-              @click:append-inner="showPassword = !showPassword"
-              required
+                v-model="password"
+                :error-messages="passwordError"
+                label="Password"
+                prepend-inner-icon="mdi-lock"
+                :append-inner-icon="showPassword ? 'mdi-eye' : 'mdi-eye-off'"
+                :type="showPassword ? 'text' : 'password'"
+                variant="outlined"
+                class="mb-4"
+                :rules="passwordRules"
+                @blur="validatePassword"
+                @click:append-inner="showPassword = !showPassword"
+                required
             ></v-text-field>
-            
+
             <div class="d-flex justify-space-between align-center mb-4">
               <v-checkbox
-                v-model="showPassword"
-                label="Show password"
-                :model-value="showPassword"
-                color="primary"
-                density="compact"
-                hide-spin-buttons
-                hide-details
-                class="mt-0 show-password-checkbox"
+                  v-model="showPassword"
+                  label="Show password"
+                  :model-value="showPassword"
+                  color="primary"
+                  density="compact"
+                  hide-spin-buttons
+                  hide-details
+                  class="mt-0 show-password-checkbox"
               ></v-checkbox>
-              
+
               <v-btn
-                variant="text"
-                color="primary"
-                to="/forgot-password"
-                class="text-none"
+                  variant="text"
+                  color="primary"
+                  to="/forgot-password"
+                  class="text-none"
               >
                 Forgot Password?
               </v-btn>
             </div>
-            
+
             <v-btn
-              type="submit"
-              color="primary"
-              size="large"
-              block
-              :loading="loading"
-              :disabled="loading || !isFormValid"
-              class="login-btn"
+                type="submit"
+                color="primary"
+                size="large"
+                block
+                :loading="loading"
+                :disabled="loading || !isFormValid"
+                class="login-btn"
             >
               <template v-if="loading">
                 <v-progress-circular
-                  indeterminate
-                  color="white"
+                    indeterminate
+                    color="white"
                 ></v-progress-circular>
               </template>
               <template v-else>
                 Login
               </template>
             </v-btn>
-            
+
             <v-alert
-              v-if="formErrors.length > 0"
-              type="error"
-              class="mt-4"
+                v-if="formErrors.length > 0"
+                type="error"
+                class="mt-4"
             >
               <div v-for="(error, index) in formErrors" :key="index">
                 {{ error }}
@@ -91,7 +91,7 @@
           </v-form>
         </div>
       </v-col>
-      
+
       <v-col cols="12" md="6" class="login-image">
         <!-- Background image will be added via CSS -->
       </v-col>
@@ -99,115 +99,95 @@
   </v-container>
 </template>
 
-<script>
-import { mapGetters, mapActions } from 'vuex'
 
-export default {
-  name: 'LoginPage',
-  data() {
-    return {
-      email: '',
-      password: '',
-      showPassword: false,
-      emailError: '',
-      passwordError: '',
-      formErrors: [],
-      emailRules: [
-        v => !!v || 'Email is required',
-        v => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v) || 'Please enter a valid email address'
-      ],
-      passwordRules: [
-        v => !!v || 'Password is required',
-        v => v.length >= 6 || 'Password must be at least 6 characters long'
-      ]
-    }
-  },
-  computed: {
-    ...mapGetters('auth', ['authLoading', 'authError']),
-    loading() {
-      return this.authLoading
-    },
-    error() {
-      return this.authError
-    },
-    isFormValid() {
-      return this.email && 
-             this.password && 
-             !this.emailError && 
-             !this.passwordError
-    }
-  },
-  methods: {
-    ...mapActions('auth', ['login']),
-    validateEmail() {
-      if (!this.email) {
-        this.emailError = 'Email is required'
-        return false
-      }
-      
-      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
-      if (!emailRegex.test(this.email)) {
-        this.emailError = 'Please enter a valid email address'
-        return false
-      }
-      
-      this.emailError = ''
-      return true
-    },
-    
-    validatePassword() {
-      if (!this.password) {
-        this.passwordError = 'Password is required'
-        return false
-      }
-      
-      if (this.password.length < 6) {
-        this.passwordError = 'Password must be at least 6 characters long'
-        return false
-      }
-      
-      this.passwordError = ''
-      return true
-    },
-    
-    async handleLogin() {
-      // Reset all errors
-      this.emailError = ''
-      this.passwordError = ''
-      this.formErrors = []
-      
-      // Validate form
-      const isEmailValid = this.validateEmail()
-      const isPasswordValid = this.validatePassword()
-      
-      if (!isEmailValid || !isPasswordValid) {
-        return
-      }
-      
-      try {
-        await this.login({
-          email: this.email,
-          password: this.password
-        })
-        this.$router.push('/quizzes')
-      } catch (error) {
-        if (error.message === 'Invalid email or password') {
-          this.passwordError = 'Incorrect password. Please try again.'
-          this.formErrors.push('Invalid email or password. Please check your credentials.')
-        } else {
-          this.formErrors.push(error.message || 'Login failed. Please try again.')
-        }
-        console.error('Login error:', error)
-      }
-    }
+<script setup>
+import {ref, computed} from 'vue'
+import {useRouter} from 'vue-router'
+import {useAuthStore} from "@/stores/index.js";
+
+// form state
+const email = ref('')
+const password = ref('')
+const showPassword = ref(false)
+const emailError = ref('')
+const passwordError = ref('')
+const formErrors = ref([])
+
+const router = useRouter()
+const auth = useAuthStore()
+
+// validation
+const emailRules = [
+  v => !!v || 'Email is required',
+  v => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v) || 'Please enter a valid email'
+]
+const passwordRules = [
+  v => !!v || 'Password is required',
+  v => v.length >= 6 || 'Password must be at least 6 characters long'
+]
+
+function validateEmail() {
+  if (!email.value) {
+    emailError.value = 'Email is required'
+    return false
+  }
+  const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+  if (!regex.test(email.value)) {
+    emailError.value = 'Invalid email'
+    return false
+  }
+  emailError.value = ''
+  return true
+}
+
+function validatePassword() {
+  if (!password.value) {
+    passwordError.value = 'Password is required'
+    return false
+  }
+  if (password.value.length < 6) {
+    passwordError.value = 'Password too short'
+    return false
+  }
+  passwordError.value = ''
+  return true
+}
+
+const isFormValid = computed(() =>
+    email.value && password.value && !emailError.value && !passwordError.value
+)
+
+
+async function handleLogin() {
+  emailError.value = ''
+  passwordError.value = ''
+  formErrors.value = []
+
+  const validEmail = validateEmail()
+  const validPass = validatePassword()
+  if (!validEmail || !validPass) return
+
+  const success = await auth.login(email.value, password.value)
+
+  if (success) {
+    console.log(router.getRoutes().map(r => r.name)) // check route names
+    await router.push({name: "Dashboard"})
+  } else {
+    formErrors.value.push(auth.error || 'Login failed')
   }
 }
+
+
 </script>
 
+
+
+
 <style scoped>
-.v-container{
+.v-container {
   padding: 0px;
 }
+
 .login-form {
   display: flex;
   align-items: center;
@@ -274,12 +254,12 @@ export default {
   .login-image {
     min-height: 200px;
   }
-  
+
   .login-form {
     min-height: auto;
     padding: 2rem 1rem;
   }
-  
+
   .welcome-text {
     font-size: 2.5rem;
   }
@@ -333,9 +313,9 @@ export default {
   opacity: 1;
 }
 
-.login-btn:hover{
+.login-btn:hover {
   color: #4CAF50 !important;
   border: 2px solid #4CAF50 !important;
   /* box-shadow: none !important; */
 }
-</style> 
+</style>

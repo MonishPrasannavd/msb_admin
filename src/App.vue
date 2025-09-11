@@ -1,142 +1,4 @@
-<script>
-import { mapGetters, mapActions } from "vuex";
 
-export default {
-  name: "App",
-  data() {
-    return {
-      drawer: true,
-      showUserMenu: false,
-      showAddTalentDialog: false,
-      newTalent: {
-        name: '',
-        image: null,
-        mediaType: 'Image'
-      },
-      talents: [],
-      departments: ['Engineering', 'Marketing', 'Sales', 'HR', 'Finance'],
-      mediaTypes: ['Image', 'Video', 'Text', 'Audio'],
-      talentSearch: ''
-    };
-  },
-  computed: {
-    ...mapGetters("auth", ["isAuthenticated", "currentUser"]),
-    isAuthPage() {
-      return ["Login", "ForgotPassword", "ResetPassword"].includes(
-        this.$route.name
-      );
-    },
-    filteredTalents() {
-      if (!this.talentSearch.trim()) {
-        return this.talents;
-      }
-      const searchTerm = this.talentSearch.toLowerCase();
-      return this.talents.filter(talent => 
-        talent.name.toLowerCase().includes(searchTerm) ||
-        talent.mediaType.toLowerCase().includes(searchTerm)
-      );
-    }
-  },
-  created() {
-    this.loadTalents();
-  },
-  methods: {
-    ...mapActions("auth", ["logout"]),
-    async handleLogout() {
-      this.showUserMenu = false;
-      await this.logout();
-      this.$router.push("/login");
-    },
-    loadTalents() {
-      const savedTalents = localStorage.getItem('talents');
-      if (savedTalents) {
-        this.talents = JSON.parse(savedTalents);
-      }
-    },
-    openAddTalentDialog() {
-      this.showAddTalentDialog = true;
-      this.newTalent = { name: '', image: null };
-      this.imagePreview = null;
-    },
-    closeAddTalentDialog() {
-      this.showAddTalentDialog = false;
-      this.newTalent = {
-        name: '',
-        image: null,
-        mediaType: 'Image'
-      };
-      this.imagePreview = null;
-    },
-    handleImageUpload(event) {
-      const file = event.target.files[0];
-      if (file) {
-        // Validate file type
-        if (!file.type.startsWith('image/')) {
-          this.$toast.error('Please select an image file');
-          return;
-        }
-        
-        // Validate file size (max 5MB)
-        if (file.size > 5 * 1024 * 1024) {
-          this.$toast.error('Image size should be less than 5MB');
-          return;
-        }
-        
-        this.newTalent.image = file;
-        
-        // Create preview
-        const reader = new FileReader();
-        reader.onload = (e) => {
-          this.imagePreview = e.target.result;
-        };
-        reader.readAsDataURL(file);
-      }
-    },
-    removeImage() {
-      this.newTalent.image = null;
-      this.imagePreview = null;
-    },
-    addTalent() {
-      if (this.newTalent.name.trim()) {
-        const talent = {
-          id: Date.now(),
-          name: this.newTalent.name.trim(),
-          mediaType: this.newTalent.mediaType,
-          image: this.newTalent.image,
-          addedDate: new Date().toLocaleDateString()
-        };
-        
-        // Handle image
-        if (this.newTalent.image) {
-          // Convert image to base64 for storage
-          const reader = new FileReader();
-          reader.onload = (e) => {
-            talent.image = e.target.result;
-            this.saveTalent(talent);
-          };
-          reader.readAsDataURL(this.newTalent.image);
-        } else {
-          this.saveTalent(talent);
-        }
-      }
-    },
-    saveTalent(talent) {
-      this.talents.push(talent);
-      localStorage.setItem('talents', JSON.stringify(this.talents));
-      this.closeAddTalentDialog();
-      this.$toast.success('Talent added successfully!');
-    },
-    removeTalent(talentId) {
-      this.talents = this.talents.filter(t => t.id !== talentId);
-      localStorage.setItem('talents', JSON.stringify(this.talents));
-      this.$toast.success('Talent removed successfully!');
-    },
-    viewTalent(talent) {
-      this.$router.push({ name: 'TalentView', params: { id: talent.id } });
-    }
-  },
-};
-</script>
 
 <template>
   <v-app>
@@ -144,7 +6,7 @@ export default {
       <v-app-bar flat>
         <v-app-bar-title>
           <div class="d-flex align-center">
-            <span class="text-h4 font-weight-bold">Msb</span>
+            <router-link to="/" class="text-h4 font-weight-bold">Msb</router-link>
             <div class="green-dot ml-2"></div>
           </div>
         </v-app-bar-title>
@@ -196,6 +58,38 @@ export default {
          style="top: 65px;"
       >
         <v-list class="pa-2">
+
+
+
+          <v-list-item
+            prepend-icon="mdi-stats"
+            title="Dashboard"
+            :to="{name:'Dashboard'}"
+            class="rounded-lg mb-2"
+            active-color="success"
+          >
+            <template v-slot:prepend>
+              <font-awesome-icon icon="fa-solid fa-eye" class="mr-2" />
+            </template>
+          </v-list-item>
+
+
+          <v-list-item
+            prepend-icon="mdi-book"
+            title="Categories"
+            :to="{name: 'Categories'}"
+            class="rounded-lg mb-2"
+            active-color="success"
+          >
+            <template v-slot:prepend>
+              <font-awesome-icon icon="fa-solid fa-book" class="mr-2" />
+            </template>
+          </v-list-item>
+
+
+
+
+
           <v-list-item
             prepend-icon="mdi-book"
             title="Quizzes"
@@ -207,6 +101,11 @@ export default {
               <font-awesome-icon icon="fa-solid fa-book" class="mr-2" />
             </template>
           </v-list-item>
+
+
+
+
+
 
           <!-- Talents Section -->
           <div class="talents-section mb-4">
@@ -417,6 +316,149 @@ export default {
     </v-dialog>
   </v-app>
 </template>
+
+
+
+<script setup>
+import { ref, computed, onMounted } from "vue"
+import { useRoute, useRouter } from "vue-router"
+import { useAuthStore } from "@/stores/auth"
+import { useToast } from "vue-toastification"
+
+// stores
+const authStore = useAuthStore()
+const toast = useToast()
+const router = useRouter()
+const route = useRoute()
+
+// state
+const drawer = ref(true)
+const showUserMenu = ref(false)
+const showAddTalentDialog = ref(false)
+const newTalent = ref({
+  name: "",
+  image: null,
+  mediaType: "Image"
+})
+const talents = ref([])
+const mediaTypes = ["Image", "Video", "Text", "Audio"]
+const talentSearch = ref("")
+const imagePreview = ref(null)
+
+// computed
+const isAuthPage = computed(() =>
+    ["Login", "ForgotPassword", "ResetPassword"].includes(route.name)
+)
+const isAuthenticated = computed(() => authStore.isAuthenticated)
+const currentUser = computed(() => authStore.user)
+const filteredTalents = computed(() => {
+  if (!talentSearch.value.trim()) return talents.value
+  const term = talentSearch.value.toLowerCase()
+  return talents.value.filter(
+      t =>
+          t.name.toLowerCase().includes(term) ||
+          t.mediaType.toLowerCase().includes(term)
+  )
+})
+
+// lifecycle
+onMounted(() => {
+  loadTalents()
+})
+
+// methods
+function handleLogout() {
+  showUserMenu.value = false
+  authStore.logout()
+  router.push("/login")
+}
+
+function loadTalents() {
+  const saved = localStorage.getItem("talents")
+  if (saved) talents.value = JSON.parse(saved)
+}
+
+function openAddTalentDialog() {
+  showAddTalentDialog.value = true
+  newTalent.value = { name: "", image: null, mediaType: "Image" }
+  imagePreview.value = null
+}
+
+function closeAddTalentDialog() {
+  showAddTalentDialog.value = false
+  newTalent.value = { name: "", image: null, mediaType: "Image" }
+  imagePreview.value = null
+}
+
+function handleImageUpload(e) {
+  const file = e.target.files[0]
+  if (!file) return
+
+  if (!file.type.startsWith("image/")) {
+    toast.error("Please select an image file")
+    return
+  }
+
+  if (file.size > 5 * 1024 * 1024) {
+    toast.error("Image size should be less than 5MB")
+    return
+  }
+
+  newTalent.value.image = file
+  const reader = new FileReader()
+  reader.onload = ev => {
+    imagePreview.value = ev.target.result
+  }
+  reader.readAsDataURL(file)
+}
+
+function removeImage() {
+  newTalent.value.image = null
+  imagePreview.value = null
+}
+
+function addTalent() {
+  if (!newTalent.value.name.trim()) return
+
+  const talent = {
+    id: Date.now(),
+    name: newTalent.value.name.trim(),
+    mediaType: newTalent.value.mediaType,
+    image: newTalent.value.image,
+    addedDate: new Date().toLocaleDateString()
+  }
+
+  if (newTalent.value.image) {
+    const reader = new FileReader()
+    reader.onload = ev => {
+      talent.image = ev.target.result
+      saveTalent(talent)
+    }
+    reader.readAsDataURL(newTalent.value.image)
+  } else {
+    saveTalent(talent)
+  }
+}
+
+function saveTalent(talent) {
+  talents.value.push(talent)
+  localStorage.setItem("talents", JSON.stringify(talents.value))
+  closeAddTalentDialog()
+  toast.success("Talent added successfully!")
+}
+
+function removeTalent(id) {
+  talents.value = talents.value.filter(t => t.id !== id)
+  localStorage.setItem("talents", JSON.stringify(talents.value))
+  toast.success("Talent removed successfully!")
+}
+
+function viewTalent(talent) {
+  router.push({ name: "TalentView", params: { id: talent.id } })
+}
+</script>
+
+
 
 <style>
 /* Global styles */
