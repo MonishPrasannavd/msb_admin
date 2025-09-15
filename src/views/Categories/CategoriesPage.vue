@@ -30,9 +30,9 @@
       </template>
 
       <template #item.name="{ item }">
-        <v-chip variant="flat" color="primary" size="small">
+        <v-btn :to="{ name : 'TalentView', params:{id:item.id}}" variant="flat" color="primary" size="small">
           {{ item.name }}
-        </v-chip>
+        </v-btn>
       </template>
 
       <template #item.is_future="{ item }">
@@ -46,35 +46,64 @@
     </v-data-table>
 
     <!-- Dialog for Create / Edit Category -->
-    <v-dialog v-model="dialog" max-width="500">
+    <v-dialog v-model="dialog" max-width="480">
       <v-card>
-        <v-card-title>
-          <span class="text-h6">{{ form.id ? "Edit" : "Add" }} Category</span>
+        <v-card-title class="justify-space-between align-center">
+          <span class="text-h6">{{ form.id ? "Edit Category" : "Add Category" }}</span>
+          <v-btn icon @click="closeDialog" variant="text">
+            <v-icon>mdi-close</v-icon>
+          </v-btn>
         </v-card-title>
 
+        <v-divider></v-divider>
+
         <v-card-text>
-          <v-form ref="formRef" @submit.prevent="handleSubmit">
-            <v-text-field v-model="form.name" label="Name" required></v-text-field>
+          <v-form ref="formRef" @submit.prevent="handleSubmit" class="d-flex flex-column gap-4">
+            <v-text-field
+              v-model="form.name"
+              label="Category Name"
+              :rules="[v => !!v || 'Name is required']"
+              required
+              prepend-inner-icon="mdi-tag"
+            ></v-text-field>
+
             <v-file-input
-  v-model="form.icon"
-  label="Icon"
-  accept="image/*"
-  :multiple="false"
-  clearable
-  show-size
-  prepend-icon="mdi-image"
-/>
+              v-model="form.icon"
+              label="Category Icon"
+              accept="image/*"
+              :multiple="false"
+              clearable
+              show-size
+              prepend-icon="mdi-image"
+            ></v-file-input>
 
-
-            <v-switch v-model="form.is_future" label="Is Future?"></v-switch>
-            <v-select v-model="form.type" :items="[0, 1, 2]" label="Type"></v-select>
+            <div class="d-flex align-center gap-4">
+              <v-switch
+                v-model="form.is_future"
+                label="Is Future?"
+                inset
+              ></v-switch>
+              <v-select
+                v-model="form.type"
+                :items="[
+                  { title: 'Type 0', value: 0 },
+                  { title: 'Type 1', value: 1 },
+                  { title: 'Type 2', value: 2 }
+                ]"
+                label="Type"
+                class="flex-grow-1"
+                required
+              ></v-select>
+            </div>
           </v-form>
         </v-card-text>
 
-        <v-card-actions>
-          <v-spacer></v-spacer>
-          <v-btn text @click="closeDialog">Cancel</v-btn>
-          <v-btn color="primary" :loading="loading" @click="handleSubmit">
+        <v-divider></v-divider>
+
+        <v-card-actions class="justify-end">
+          <v-btn variant="text" @click="closeDialog">Cancel</v-btn>
+          <v-btn color="primary" :loading="loading" @click="handleSubmit" variant="flat">
+            <v-icon left>{{ form.id ? "mdi-content-save" : "mdi-plus" }}</v-icon>
             {{ form.id ? "Update" : "Add" }}
           </v-btn>
         </v-card-actions>

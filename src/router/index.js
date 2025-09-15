@@ -44,7 +44,12 @@ const routes = [
                 component: () => import('../views/Categories/CategoriesPage.vue'),
                 meta: { requiresAuth: true }
             },
-
+            {
+                path: 'talents/:id',
+                name: 'TalentView',
+                component: () => import('../views/talent/TalentViewPage.vue'),
+                meta: { requiresAuth: true }
+            },
 
 
 
@@ -67,12 +72,7 @@ const routes = [
                 component: () => import('../views/quiz/EditQuizPage.vue'),
                 meta: { requiresAuth: true }
             },
-            {
-                path: 'talents/:id',
-                name: 'TalentView',
-                component: () => import('../views/talent/TalentViewPage.vue'),
-                meta: { requiresAuth: true }
-            },
+            
             {
                 path: 'talents/:talentId/sub-talents/:subTalentId',
                 name: 'SubTalentView',

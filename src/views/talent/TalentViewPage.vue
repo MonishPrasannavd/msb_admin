@@ -1,6 +1,5 @@
 <template>
   <div class="talent-view-container">
-    <!-- Loading Overlay -->
     <div v-if="isLoading" class="loading-overlay">
       <v-progress-circular
         indeterminate
@@ -11,7 +10,6 @@
     </div>
     
     <v-row no-gutters class="px-2" style="height: 100vh">
-      <!-- Left Sidebar - Talent Info -->
       <v-col cols="3" class="talent-info-section d-flex flex-column nav-border">
         <div class="d-flex justify-space-between align-center px-4 py-3">
           <span class="text-h5 font-weight-bold">{{ talent?.name || 'Talent' }}</span>
@@ -19,14 +17,13 @@
             color="success"
             variant="text"
             size="small"
-            @click="$router.push('/talents')"
+            @click="router.push('/talents')"
           >
             <font-awesome-icon icon="fa-solid fa-arrow-left" class="mr-2" />
             Back
           </v-btn>
         </div>
         
-        <!-- Talent Details -->
         <div class="talent-details pa-4">
           <div class="talent-avatar-container text-center mb-4">
             <v-avatar size="120" class="mb-3">
@@ -44,6 +41,8 @@
           
           <v-divider class="mb-4"></v-divider>
           
+
+          {{ talent }}
           <div class="talent-stats">
             <div class="stat-item d-flex justify-space-between align-center mb-3">
               <span class="text-body-2">Media Type:</span>
@@ -64,7 +63,6 @@
           </div>
         </div>
         
-        <!-- Add Sub-talent Button -->
         <div class="px-4 py-3">
           <v-btn
             color="success"
@@ -79,9 +77,7 @@
         </div>
       </v-col>
 
-      <!-- Right Content Section -->
       <v-col cols="9" class="content-section px-5">
-        <!-- Search and Status Bar -->
         <div class="py-3 d-flex align-center">
           <v-text-field
             v-model="search" 
@@ -99,7 +95,6 @@
             </template>
           </v-text-field>
           
-                     <!-- Filter Buttons -->
            <div class="filter-buttons d-flex align-center mr-4">
              <font-awesome-icon icon="fa-solid fa-filter" class="filter-icon mr-2" />
              
@@ -151,7 +146,6 @@
           </div>
         </div>
           
-        <!-- Sub-talents Cards -->
         <div 
           class="sub-talents-cards pa-6"
           style="overflow-y: auto"
@@ -206,7 +200,6 @@
                   </span>
                 </div>
 
-                <!-- Timer Section -->
                 <div class="timer-section mb-3 pa-2 rounded" :class="getTimerClass(subTalent)">
                   <div class="d-flex align-center justify-space-between">
                     <div class="d-flex align-center">
@@ -258,7 +251,6 @@
             </v-col>
           </v-row>
           
-          <!-- Empty State -->
           <div v-if="filteredSubTalents.length === 0" class="text-center pa-8">
             <v-icon icon="mdi-account-group-outline" size="64" color="grey" class="mb-4"></v-icon>
             <h3 class="text-h6 text-grey-darken-1 mb-2">No Sub-talents Found</h3>
@@ -268,7 +260,6 @@
       </v-col>
     </v-row>
     
-    <!-- Add/Edit Sub-talent Dialog -->
     <v-dialog v-model="showSubTalentDialog" max-width="600" persistent>
       <v-card class="sub-talent-dialog">
         <v-card-title class="text-h5 pa-4">
@@ -276,7 +267,7 @@
         </v-card-title>
         
         <v-card-text class="pa-4">
-          <v-form ref="subTalentForm">
+          <v-form ref="subTalentFormRef">
             <v-text-field
               v-model="subTalentForm.name"
               label="Sub-talent Name"
@@ -359,7 +350,6 @@
       </v-card>
     </v-dialog>
     
-    <!-- View Sub-talent Dialog -->
     <v-dialog v-model="showViewDialog" width="700">
       <v-card class="sub-talent-view-dialog">
         <v-card-title class="d-flex flex-column align-start pa-6">
@@ -402,7 +392,6 @@
         </v-card-title>
            
         <v-card-text class="pa-6 pt-0">
-          <!-- Timer Section for detailed view -->
           <div class="timer-section mb-4 pa-3 rounded" :class="getTimerClass(selectedSubTalent)">
             <div class="d-flex align-center justify-space-between">
               <div class="d-flex align-center">
@@ -440,369 +429,305 @@
   </div>
 </template>
 
-<script>
-export default {
-  name: "TalentViewPage",
-  data() {
-    return {
-      talent: null,
-      subTalents: [],
-      search: "",
-      showSubTalentDialog: false,
-      showViewDialog: false,
-      isEditing: false,
-      isSaving: false,
-      selectedSubTalent: null,
-      grades: ['Grade 1-4', 'Grade 5-7', 'Grade 7-12'],
-      availableTalents: [],
-      subTalentForm: {
-        name: '',
-        talentName: '',
-        grade: '',
-        startDate: '',
-        endDate: '',
-        isActive: true
-      },
-      timerInterval: null,
-      isLoading: false,
-      statusFilter: 'all' // 'all', 'active', 'inactive'
+<script setup>
+import { ref, reactive, computed, onMounted, onBeforeUnmount, watch } from 'vue';
+import { useRoute, useRouter } from 'vue-router';
+
+import { useCategoryStore } from "@/stores/category";
+
+const categoryStore = useCategoryStore();
+
+const categories = computed(() => categoryStore.categories);
+
+// NOTE: Replace with your actual toast notification plugin, e.g., from 'vue-toastification'
+// import { useToast } from 'vue-toastification';
+// const toast = useToast();
+// Using a placeholder for demonstration:
+const toast = {
+  success: (msg) => console.log(`SUCCESS: ${msg}`),
+  error: (msg) => console.error(`ERROR: ${msg}`),
+};
+
+// COMPONENT SETUP
+const route = useRoute();
+const router = useRouter();
+
+// REACTIVE STATE
+const talent = ref(null);
+const subTalents = ref([]);
+const search = ref("");
+const showSubTalentDialog = ref(false);
+const showViewDialog = ref(false);
+const isEditing = ref(false);
+const isSaving = ref(false);
+const selectedSubTalent = ref(null);
+const grades = ref(['Grade 1-4', 'Grade 5-7', 'Grade 7-12']);
+const availableTalents = ref([]);
+const subTalentForm = reactive({
+  name: '',
+  grade: '',
+  startDate: '',
+  endDate: '',
+});
+const subTalentFormRef = ref(null); // For v-form ref
+const timerInterval = ref(null);
+const isLoading = ref(false);
+const statusFilter = ref('all');
+const renderTrigger = ref(0); // Used to force re-render for timers
+
+// COMPUTED PROPERTIES
+const filteredSubTalents = computed(() => {
+  let filtered = subTalents.value;
+
+  if (search.value) {
+    const searchLower = search.value.toLowerCase();
+    filtered = filtered.filter(
+      (subTalent) =>
+        subTalent.name.toLowerCase().includes(searchLower) ||
+        subTalent.category?.toLowerCase().includes(searchLower) ||
+        subTalent.description?.toLowerCase().includes(searchLower)
+    );
+  }
+
+  if (statusFilter.value !== 'all') {
+    filtered = filtered.filter(subTalent => {
+      return statusFilter.value === 'active' ? subTalent.isActive : !subTalent.isActive;
+    });
+  }
+
+  return filtered;
+});
+
+const activeSubTalentsCount = computed(() => {
+  return subTalents.value.filter((subTalent) => subTalent.isActive).length;
+});
+
+const inactiveSubTalentsCount = computed(() => {
+  return subTalents.value.filter((subTalent) => !subTalent.isActive).length;
+});
+
+const isSubTalentFormValid = computed(() => {
+  return subTalentForm.name.trim() && 
+         subTalentForm.grade && 
+         subTalentForm.startDate && 
+         subTalentForm.endDate;
+});
+
+// METHODS
+const loadTalentData = () => {
+  isLoading.value = true;
+  const talentId = route.params.id;
+  
+  if (!talentId) {
+    toast.error('No talent ID provided. Please select a talent.');
+    router.push('/');
+    isLoading.value = false;
+    return;
+  }
+  
+  const allTalents = JSON.parse(localStorage.getItem('talents') || '[]');
+  const foundTalent = categories.find(t => t.id == talentId);
+
+  
+  if (!foundTalent) {
+    toast.error('Talent not found.');
+    router.push('/');
+    isLoading.value = false;
+    return;
+  }
+
+  talent.value = foundTalent;
+  subTalents.value = JSON.parse(localStorage.getItem(`subTalents_${talent.value.id}`) || '[]');
+  availableTalents.value = allTalents.map(t => ({ title: t.name, value: t.id }));
+  
+  isLoading.value = false;
+};
+
+const openAddSubTalentDialog = () => {
+  isEditing.value = false;
+  Object.assign(subTalentForm, { name: '', grade: '', startDate: '', endDate: '' });
+  showSubTalentDialog.value = true;
+};
+
+const editSubTalent = (subTalentToEdit) => {
+  isEditing.value = true;
+  selectedSubTalent.value = subTalentToEdit;
+  Object.assign(subTalentForm, {
+    name: subTalentToEdit.name,
+    grade: subTalentToEdit.grade,
+    startDate: subTalentToEdit.startDate,
+    endDate: subTalentToEdit.endDate
+  });
+  showSubTalentDialog.value = true;
+};
+
+const viewSubTalent = (subTalent) => {
+  router.push({
+    name: 'SubTalentView',
+    params: {
+      talentId: talent.value.id,
+      subTalentId: subTalent.id
+    }
+  });
+};
+
+const closeSubTalentDialog = () => {
+  showSubTalentDialog.value = false;
+  selectedSubTalent.value = null;
+};
+
+const saveSubTalent = async () => {
+  if (!isSubTalentFormValid.value) return;
+  
+  isSaving.value = true;
+  
+  try {
+    const subTalentData = {
+      id: isEditing.value ? selectedSubTalent.value.id : Date.now(),
+      name: subTalentForm.name.trim(),
+      talentName: talent.value.id,
+      grade: subTalentForm.grade,
+      startDate: subTalentForm.startDate,
+      endDate: subTalentForm.endDate,
+      isActive: isEditing.value ? selectedSubTalent.value.isActive : true,
+      addedDate: isEditing.value ? selectedSubTalent.value.addedDate : new Date().toLocaleDateString(),
+      talentId: talent.value.id
     };
-  },
-  computed: {
-    filteredSubTalents() {
-      let filtered = this.subTalents;
-
-      if (this.search) {
-        const searchLower = this.search.toLowerCase();
-        filtered = filtered.filter(
-          (subTalent) =>
-            subTalent.name.toLowerCase().includes(searchLower) ||
-            subTalent.category.toLowerCase().includes(searchLower) ||
-            subTalent.description?.toLowerCase().includes(searchLower)
-        );
+    
+    if (isEditing.value) {
+      const index = subTalents.value.findIndex(st => st.id === subTalentData.id);
+      if (index !== -1) {
+        subTalents.value[index] = subTalentData;
       }
-
-      if (this.statusFilter !== 'all') {
-        filtered = filtered.filter(subTalent => {
-          if (this.statusFilter === 'active') {
-            return subTalent.isActive;
-          } else { // inactive
-            return !subTalent.isActive;
-          }
-        });
-      }
-
-      return filtered;
-    },
-    activeSubTalentsCount() {
-      return this.subTalents.filter((subTalent) => subTalent.isActive).length;
-    },
-    inactiveSubTalentsCount() {
-      return this.subTalents.filter((subTalent) => !subTalent.isActive).length;
-    },
-    isSubTalentFormValid() {
-      return this.subTalentForm.name.trim() && 
-             this.subTalentForm.grade && 
-             this.subTalentForm.startDate && 
-             this.subTalentForm.endDate;
+    } else {
+      subTalents.value.push(subTalentData);
     }
-  },
-  created() {
-    this.loadTalentData();
-    // Start timer interval for real-time updates
-    this.timerInterval = setInterval(() => {
-      this.$forceUpdate(); // Force re-render to update timers
-    }, 1000);
-  },
-  watch: {
-    // Watch for route changes to reload data when navigating between talents
-    '$route'(to, from) {
-      if (to.params.id !== from.params.id) {
-        this.loadTalentData();
-      }
-    }
-  },
-  beforeUnmount() {
-    // Clear timer interval when component is destroyed
-    if (this.timerInterval) {
-      clearInterval(this.timerInterval);
-    }
-  },
-  methods: {
-    loadTalentData() {
-      this.isLoading = true;
-      const talentId = this.$route.params.id;
-      console.log('Loading talent with ID:', talentId);
-      
-      if (!talentId) {
-        console.log('No talent ID provided');
-        this.$toast.error('No talent ID provided. Please select a talent from the sidebar.');
-        this.$router.push('/');
-        this.isLoading = false;
-        return;
-      }
-      
-      // Load talent from localStorage
-      const talents = JSON.parse(localStorage.getItem('talents') || '[]');
-      console.log('All talents:', talents);
-      
-      // Try to find talent by ID (handle both string and number)
-      this.talent = talents.find(t => t.id == talentId || t.id === parseInt(talentId));
-      console.log('Found talent:', this.talent);
-      
-      if (!this.talent) {
-        console.log('Talent not found, showing available talents');
-        
-        // Show available talents in console for debugging
-        console.log('Available talents:', talents);
-        
-        // If no talents exist, suggest adding talents
-        if (talents.length === 0) {
-          this.$toast.error('No talents found. Please add a talent first using the "Add Talent" button.');
-        } else {
-          const talentNames = talents.map(t => t.name).join(', ');
-          this.$toast.error(`Talent not found. Available talents: ${talentNames}`);
-        }
-        
-        // Redirect to main page
-        this.$router.push('/');
-        this.isLoading = false;
-        return;
-      }
-      
-      // Load sub-talents for this specific talent only
-      const subTalents = JSON.parse(localStorage.getItem(`subTalents_${this.talent.id}`) || '[]');
-      console.log('Sub-talents for talent:', subTalents);
-      this.subTalents = subTalents;
-
-      // Load available talents for the dropdown (but we'll use current talent only)
-      this.availableTalents = talents.map(t => ({
-        title: t.name,
-        value: t.id
-      }));
-      
-      console.log('Talent data loaded successfully:', {
-        talent: this.talent,
-        subTalentsCount: this.subTalents.length
-      });
-      
-      this.isLoading = false;
-    },
-    refreshTalentData() {
-      // Force reload talent data
-      this.loadTalentData();
-    },
-    openAddSubTalentDialog() {
-      this.isEditing = false;
-      this.subTalentForm = {
-        name: '',
-        grade: '',
-        startDate: '',
-        endDate: ''
-      };
-      this.showSubTalentDialog = true;
-    },
-    editSubTalent(subTalent) {
-      this.isEditing = true;
-      this.selectedSubTalent = subTalent;
-      this.subTalentForm = {
-        name: subTalent.name,
-        grade: subTalent.grade,
-        startDate: subTalent.startDate,
-        endDate: subTalent.endDate
-      };
-      this.showSubTalentDialog = true;
-    },
-    viewSubTalent(subTalent) {
-      // Navigate to the detailed sub-talent view
-      this.$router.push({
-        name: 'SubTalentView',
-        params: {
-          talentId: this.talent.id,
-          subTalentId: subTalent.id
-        }
-      });
-    },
-    closeSubTalentDialog() {
-      this.showSubTalentDialog = false;
-      this.selectedSubTalent = null;
-    },
-    async saveSubTalent() {
-      if (!this.isSubTalentFormValid) return;
-      
-      this.isSaving = true;
-      
-      try {
-        const subTalentData = {
-          id: this.isEditing ? this.selectedSubTalent.id : Date.now(),
-          name: this.subTalentForm.name.trim(),
-          talentName: this.talent.id, // Always use current talent's ID
-          grade: this.subTalentForm.grade,
-          startDate: this.subTalentForm.startDate,
-          endDate: this.subTalentForm.endDate,
-          isActive: this.isEditing ? this.selectedSubTalent.isActive : true,
-          addedDate: this.isEditing ? this.selectedSubTalent.addedDate : new Date().toLocaleDateString(),
-          talentId: this.talent.id
-        };
-        
-        if (this.isEditing) {
-          const index = this.subTalents.findIndex(st => st.id === subTalentData.id);
-          if (index !== -1) {
-            this.subTalents[index] = subTalentData;
-          }
-        } else {
-          this.subTalents.push(subTalentData);
-        }
-        
-        // Save to localStorage
-        localStorage.setItem(`subTalents_${this.talent.id}`, JSON.stringify(this.subTalents));
-        
-        this.closeSubTalentDialog();
-        this.$toast.success(`Sub-talent ${this.isEditing ? 'updated' : 'added'} successfully!`);
-      } catch (error) {
-        console.error('Error saving sub-talent:', error);
-        this.$toast.error('Failed to save sub-talent. Please try again.');
-      } finally {
-        this.isSaving = false;
-      }
-    },
-    toggleSubTalentStatus(subTalentId) {
-      const subTalent = this.subTalents.find(st => st.id === subTalentId);
-      if (subTalent) {
-        subTalent.isActive = !subTalent.isActive;
-        localStorage.setItem(`subTalents_${this.talent.id}`, JSON.stringify(this.subTalents));
-        this.$toast.success(`Sub-talent ${subTalent.isActive ? 'activated' : 'deactivated'} successfully!`);
-      }
-    },
-    getTalentName(talentId) {
-      const talent = this.availableTalents.find(t => t.value === talentId);
-      return talent ? talent.title : 'N/A';
-    },
-    formatDateTime(dateString) {
-      if (!dateString) return 'N/A';
-      const date = new Date(dateString);
-      return date.toLocaleDateString() + ' ' + date.toLocaleTimeString();
-    },
-    getTimerClass(subTalent) {
-      if (!subTalent.startDate || !subTalent.endDate) {
-        return 'inactive';
-      }
-      const now = new Date();
-      const start = new Date(subTalent.startDate);
-      const end = new Date(subTalent.endDate);
-
-      if (now < start) {
-        return 'upcoming';
-      } else if (now >= start && now <= end) {
-        return 'active';
-      } else {
-        return 'inactive';
-      }
-    },
-    getTimerIcon(subTalent) {
-      if (!subTalent.startDate || !subTalent.endDate) {
-        return 'fa-solid fa-clock';
-      }
-      const now = new Date();
-      const start = new Date(subTalent.startDate);
-      const end = new Date(subTalent.endDate);
-
-      if (now < start) {
-        return 'fa-solid fa-arrow-up';
-      } else if (now >= start && now <= end) {
-        return 'fa-solid fa-check-circle';
-      } else {
-        return 'fa-solid fa-arrow-down';
-      }
-    },
-    getTimerIconClass(subTalent) {
-      if (!subTalent.startDate || !subTalent.endDate) {
-        return 'text-grey';
-      }
-      const now = new Date();
-      const start = new Date(subTalent.startDate);
-      const end = new Date(subTalent.endDate);
-
-      if (now < start) {
-        return 'text-success';
-      } else if (now >= start && now <= end) {
-        return 'text-success';
-      } else {
-        return 'text-warning';
-      }
-    },
-    getTimerText(subTalent) {
-      if (!subTalent.startDate || !subTalent.endDate) {
-        return 'Not Scheduled';
-      }
-      const now = new Date();
-      const start = new Date(subTalent.startDate);
-      const end = new Date(subTalent.endDate);
-
-      if (now < start) {
-        return 'Upcoming';
-      } else if (now >= start && now <= end) {
-        return 'Active';
-      } else {
-        return 'Inactive';
-      }
-    },
-    getTimerTextClass(subTalent) {
-      if (!subTalent.startDate || !subTalent.endDate) {
-        return 'text-grey';
-      }
-      const now = new Date();
-      const start = new Date(subTalent.startDate);
-      const end = new Date(subTalent.endDate);
-
-      if (now < start) {
-        return 'text-success';
-      } else if (now >= start && now <= end) {
-        return 'text-success';
-      } else {
-        return 'text-warning';
-      }
-    },
-    getTimerDisplay(subTalent) {
-      if (!subTalent.startDate || !subTalent.endDate) {
-        return null;
-      }
-      const now = new Date();
-      const start = new Date(subTalent.startDate);
-      const end = new Date(subTalent.endDate);
-
-      if (now < start) {
-        const diff = start - now;
-        return this.formatTime(diff);
-      } else if (now >= start && now <= end) {
-        const diff = end - now;
-        return this.formatTime(diff);
-      } else {
-        const diff = now - end;
-        return this.formatTime(diff);
-      }
-    },
-    formatTime(milliseconds) {
-      const days = Math.floor(milliseconds / (1000 * 60 * 60 * 24));
-      const hours = Math.floor((milliseconds % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-      const minutes = Math.floor((milliseconds % (1000 * 60 * 60)) / (1000 * 60));
-      const seconds = Math.floor((milliseconds % (1000 * 60)) / 1000);
-
-      if (days > 0) {
-        return `${days}d ${hours}h ${minutes}m`;
-      } else if (hours > 0) {
-        return `${hours}h ${minutes}m ${seconds}s`;
-      } else if (minutes > 0) {
-        return `${minutes}m ${seconds}s`;
-      } else {
-        return `${seconds}s`;
-      }
-    },
-    setStatusFilter(filter) {
-      this.statusFilter = filter;
-    }
+    
+    localStorage.setItem(`subTalents_${talent.value.id}`, JSON.stringify(subTalents.value));
+    
+    closeSubTalentDialog();
+    toast.success(`Sub-talent ${isEditing.value ? 'updated' : 'added'} successfully!`);
+  } catch (error) {
+    console.error('Error saving sub-talent:', error);
+    toast.error('Failed to save sub-talent. Please try again.');
+  } finally {
+    isSaving.value = false;
   }
 };
+
+const toggleSubTalentStatus = (subTalentId) => {
+  const subTalent = subTalents.value.find(st => st.id === subTalentId);
+  if (subTalent) {
+    subTalent.isActive = !subTalent.isActive;
+    localStorage.setItem(`subTalents_${talent.value.id}`, JSON.stringify(subTalents.value));
+    toast.success(`Sub-talent ${subTalent.isActive ? 'activated' : 'deactivated'} successfully!`);
+  }
+};
+
+const getTalentName = (talentId) => {
+  const foundTalent = availableTalents.value.find(t => t.value === talentId);
+  return foundTalent ? foundTalent.title : 'N/A';
+};
+
+const formatDateTime = (dateString) => {
+  if (!dateString) return 'N/A';
+  const date = new Date(dateString);
+  return date.toLocaleDateString() + ' ' + date.toLocaleTimeString();
+};
+
+const setStatusFilter = (filter) => {
+  statusFilter.value = filter;
+};
+
+// TIMER UTILITY FUNCTIONS
+const getTimerClass = (subTalent) => {
+  if (!subTalent?.startDate || !subTalent?.endDate) return 'inactive';
+  const now = new Date();
+  const start = new Date(subTalent.startDate);
+  const end = new Date(subTalent.endDate);
+  if (now < start) return 'upcoming';
+  if (now >= start && now <= end) return 'active';
+  return 'inactive';
+};
+
+const getTimerIcon = (subTalent) => {
+  if (!subTalent?.startDate || !subTalent?.endDate) return 'fa-solid fa-clock';
+  const now = new Date();
+  const start = new Date(subTalent.startDate);
+  const end = new Date(subTalent.endDate);
+  if (now < start) return 'fa-solid fa-arrow-up';
+  if (now >= start && now <= end) return 'fa-solid fa-check-circle';
+  return 'fa-solid fa-arrow-down';
+};
+
+const getTimerIconClass = (subTalent) => {
+  const status = getTimerClass(subTalent);
+  if (status === 'upcoming' || status === 'active') return 'text-success';
+  if (status === 'inactive') return 'text-warning';
+  return 'text-grey';
+};
+
+const getTimerText = (subTalent) => {
+  const status = getTimerClass(subTalent);
+  if (!subTalent?.startDate || !subTalent?.endDate) return 'Not Scheduled';
+  if (status === 'upcoming') return 'Upcoming';
+  if (status === 'active') return 'Active';
+  return 'Inactive';
+};
+
+const getTimerTextClass = (subTalent) => getTimerIconClass(subTalent);
+
+const formatTime = (milliseconds) => {
+  const days = Math.floor(milliseconds / (1000 * 60 * 60 * 24));
+  const hours = Math.floor((milliseconds % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+  const minutes = Math.floor((milliseconds % (1000 * 60 * 60)) / (1000 * 60));
+  const seconds = Math.floor((milliseconds % (1000 * 60)) / 1000);
+
+  if (days > 0) return `${days}d ${hours}h ${minutes}m`;
+  if (hours > 0) return `${hours}h ${minutes}m ${seconds}s`;
+  if (minutes > 0) return `${minutes}m ${seconds}s`;
+  return `${seconds}s`;
+};
+
+const getTimerDisplay = (subTalent) => {
+  if (!subTalent?.startDate || !subTalent?.endDate) return null;
+  
+  // This line ensures the computed property is re-evaluated when renderTrigger changes
+  const _ = renderTrigger.value;
+  
+  const now = new Date();
+  const start = new Date(subTalent.startDate);
+  const end = new Date(subTalent.endDate);
+
+  if (now < start) {
+    return formatTime(start - now);
+  } else if (now >= start && now <= end) {
+    return formatTime(end - now);
+  } else {
+    return formatTime(now - end);
+  }
+};
+
+// LIFECYCLE HOOKS & WATCHERS
+watch(() => route.params.id, (newId, oldId) => {
+  if (newId && newId !== oldId) {
+    loadTalentData();
+  }
+});
+
+onMounted(() => {
+  loadTalentData();
+  // Set an interval to trigger re-renders for the countdown timers
+  timerInterval.value = setInterval(() => {
+    renderTrigger.value++;
+  }, 1000);
+});
+
+onBeforeUnmount(() => {
+  if (timerInterval.value) {
+    clearInterval(timerInterval.value);
+  }
+});
 </script>
 
 <style scoped>
