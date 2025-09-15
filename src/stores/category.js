@@ -31,11 +31,19 @@ export const useCategoryStore = defineStore('category', {
 
         async createCategory(payload) {
             this.loading = true
+            const formData = new FormData();
+            formData.append('name', payload.name);
+            formData.append('type', payload.type);
+            formData.append('is_future', payload.is_future ? 1 : 0);
+            if (payload.icon) {
+                formData.append('icon', payload.icon);
+            }
             try {
-                await api.post('/category/create-category', payload)
+                await api.post('/category/create-category', formData)
                 return true
             } catch (err) {
                 this.error = err.response?.data?.message || 'Failed to create category'
+                console.error("Failed to create category:", err.response?.data);
                 return false
             } finally {
                 this.loading = false
