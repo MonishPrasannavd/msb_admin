@@ -17,7 +17,7 @@
             color="success"
             variant="text"
             size="small"
-            @click="router.push('/talents')"
+            @click="router.push('/categories')"
           >
             <font-awesome-icon icon="fa-solid fa-arrow-left" class="mr-2" />
             Back
@@ -28,8 +28,8 @@
           <div class="talent-avatar-container text-center mb-4">
             <v-avatar size="120" class="mb-3">
               <v-img
-                v-if="talent?.image"
-                :src="talent.image"
+                v-if="talent?.icon"
+                :src="talent.icon"
                 :alt="talent?.name"
                 cover
               ></v-img>
@@ -42,24 +42,23 @@
           <v-divider class="mb-4"></v-divider>
           
 
-          {{ talent }}
           <div class="talent-stats">
             <div class="stat-item d-flex justify-space-between align-center mb-3">
               <span class="text-body-2">Media Type:</span>
-              <v-chip color="info" size="small">{{ talent?.mediaType || 'N/A' }}</v-chip>
+              <v-chip color="info" size="small">{{ talent?.type || 'N/A' }}</v-chip>
             </div>
             <div class="stat-item d-flex justify-space-between align-center mb-3">
               <span class="text-body-2">Total Sub-talents:</span>
-              <v-chip color="success" size="small">{{ subTalents.length }}</v-chip>
+              <v-chip color="success" size="small">{{ subTalents.length|| "see shit"}}</v-chip>
             </div>
-            <div class="stat-item d-flex justify-space-between align-center mb-3">
+            <!-- <div class="stat-item d-flex justify-space-between align-center mb-3">
               <span class="text-body-2">Active:</span>
               <v-chip color="success" size="small">{{ activeSubTalentsCount }}</v-chip>
             </div>
             <div class="stat-item d-flex justify-space-between align-center">
               <span class="text-body-2">Inactive:</span>
               <v-chip color="warning" size="small">{{ inactiveSubTalentsCount }}</v-chip>
-            </div>
+            </div> -->
           </div>
         </div>
         
@@ -526,7 +525,7 @@ const loadTalentData = () => {
   }
   
   const allTalents = JSON.parse(localStorage.getItem('talents') || '[]');
-  const foundTalent = categories.find(t => t.id == talentId);
+  const foundTalent = categories.value.find(t => t.id == talentId);
 
   
   if (!foundTalent) {
@@ -537,7 +536,8 @@ const loadTalentData = () => {
   }
 
   talent.value = foundTalent;
-  subTalents.value = JSON.parse(localStorage.getItem(`subTalents_${talent.value.id}`) || '[]');
+  // subTalents.value = JSON.parse(localStorage.getItem(`subTalents_${talent.value.id}`) || '[]');
+  subTalents.value = foundTalent.subcategories || [];
   availableTalents.value = allTalents.map(t => ({ title: t.name, value: t.id }));
   
   isLoading.value = false;

@@ -56,27 +56,28 @@
   </div>
 </template>
 
-<script>
-export default {
-  name: "TalentsListPage",
-  data() {
-    return {
-      talents: []
-    };
-  },
-  created() {
-    this.loadTalents();
-  },
-  methods: {
-    loadTalents() {
-      const talents = JSON.parse(localStorage.getItem('talents') || '[]');
-      this.talents = talents;
-    },
-    viewTalent(talent) {
-      this.$router.push({ name: 'TalentView', params: { id: talent.id } });
-    }
-  }
+<script setup>
+import { ref, onMounted } from 'vue';
+import { useRouter } from 'vue-router';
+
+// 1. Initialize router and state
+const router = useRouter();
+const talents = ref([]);
+
+// 2. Define methods
+const loadTalents = () => {
+  const storedTalents = JSON.parse(localStorage.getItem('talents') || '[]');
+  talents.value = storedTalents;
 };
+
+const viewTalent = (talent) => {
+  router.push({ name: 'TalentView', params: { id: talent.id } });
+};
+
+// 3. Call methods on component mount (replaces created hook)
+onMounted(() => {
+  loadTalents();
+});
 </script>
 
 <style scoped>

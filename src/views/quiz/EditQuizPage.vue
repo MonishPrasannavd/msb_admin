@@ -7,7 +7,7 @@
         variant="text"
         size="large"
         class="back-btn"
-        @click="$router.push('/quizzes')"
+        @click="router.push('/quizzes')"
       >
         <font-awesome-icon icon="fa-solid fa-arrow-left" class="mr-2" />
         Back to Quiz List
@@ -136,7 +136,6 @@
       </div>
     </div>
 
-    <!-- Add Question Dialog -->
     <v-dialog v-model="showAddDialog" max-width="800px">
       <v-card>
         <v-card-title class="text-h5 pa-4">
@@ -201,193 +200,171 @@
   </div>
 </template>
 
-<script>
-export default {
-  name: 'EditQuizPage',
-  data() {
-    return {
-      isSaving: false,
-      subjects: ['Maths', 'Science', 'GK', 'History', 'Social Studies'],
-      grades: ['Grade 1', 'Grade 2', 'Grade 3', 'Grade 4', 'Grade 5', 'Grade 6', 'Grade 7', 'Grade 8', 'Grade 9', 'Grade 10'],
-      showAddDialog: false,
-      newQuestion: {
-        text: '',
-        options: ['', '', '', ''],
-        correct: null
-      },
-      quizData: {
-        id: null,
-        name: '',
-        category: '',
-        grade: '',
-        duration: 45,
-        questions: []
-      }
+<script setup>
+import { ref, reactive, computed, onMounted } from 'vue';
+import { useRouter } from 'vue-router';
+
+// --- Composables ---
+const router = useRouter();
+
+// --- State ---
+const isSaving = ref(false);
+const subjects = ['Maths', 'Science', 'GK', 'History', 'Social Studies'];
+const grades = ['Grade 1', 'Grade 2', 'Grade 3', 'Grade 4', 'Grade 5', 'Grade 6', 'Grade 7', 'Grade 8', 'Grade 9', 'Grade 10'];
+const showAddDialog = ref(false);
+
+// Using 'reactive' for objects is often cleaner
+const newQuestion = reactive({
+  text: '',
+  options: ['', '', '', ''],
+  correct: null
+});
+
+const quizData = reactive({
+  id: null,
+  name: '',
+  category: '',
+  grade: '',
+  duration: 45,
+  questions: []
+});
+
+// --- Computed ---
+const isNewQuestionValid = computed(() => {
+  return (
+    newQuestion.text.trim() !== '' &&
+    newQuestion.options.every(opt => opt.trim() !== '') &&
+    newQuestion.correct !== null
+  );
+});
+
+// --- Methods ---
+const loadQuizData = () => {
+  try {
+    const savedQuizData = sessionStorage.getItem('editQuizData');
+    if (savedQuizData) {
+      const parsedData = JSON.parse(savedQuizData);
+      
+      // Assign properties to the reactive quizData object
+      quizData.id = parsedData.id;
+      quizData.name = parsedData.name || '';
+      quizData.category = parsedData.category || '';
+      quizData.grade = parsedData.grade || '';
+      quizData.duration = parsedData.duration || 45;
+      quizData.questions = (parsedData.savedQuestions || []).map(q => ({
+        text: q.question || q.text || '',
+        options: q.options || ['', '', '', ''],
+        correct: q.correct || null
+      }));
+      
+      sessionStorage.removeItem('editQuizData');
+    } else {
+      alert('No quiz data found. Redirecting...');
+      router.push('/quizzes');
     }
-  },
-  created() {
-    this.loadQuizData();
-  },
-  methods: {
-    loadQuizData() {
-      try {
-        const savedQuizData = sessionStorage.getItem('editQuizData');
-        console.log('Saved Quiz Data:', savedQuizData); // Debug log
-        
-        if (savedQuizData) {
-          const parsedQuizData = JSON.parse(savedQuizData);
-          console.log('Parsed Quiz Data:', parsedQuizData); // Debug log
-          
-          // Update the component's data
-          this.quizData = {
-            id: parsedQuizData.id,
-            name: parsedQuizData.name || '',
-            category: parsedQuizData.category || '',
-            grade: parsedQuizData.grade || '',
-            duration: parsedQuizData.duration || 45,
-            questions: (parsedQuizData.savedQuestions || []).map(q => ({
-              text: q.question || q.text || '', // Handle both formats
-              options: q.options || ['', '', '', ''],
-              correct: q.correct || null
-            }))
-          };
-          
-          console.log('Loaded Quiz Data:', this.quizData); // Debug log
-          
-          // Clear the sessionStorage after loading
-          sessionStorage.removeItem('editQuizData');
-        } else {
-          console.warn('No quiz data found in sessionStorage');
-          alert('No quiz data found. Redirecting to quiz list.');
-          this.$router.push('/quizzes');
-        }
-      } catch (error) {
-        console.error('Error loading quiz:', error);
-        alert('Failed to load quiz data. Redirecting to quiz list.');
-        this.$router.push('/quizzes');
-      }
-    },
-    async saveChanges() {
-      try {
-        this.isSaving = true;
-        
-        // Validate required fields
-        if (!this.quizData.name || !this.quizData.category || !this.quizData.grade) {
-          alert('Please fill in all required fields');
-          return;
-        }
-
-        if (this.quizData.questions.length === 0) {
-          alert('Please add at least one question');
-          return;
-        }
-
-        // Validate all questions have text, options and correct answer
-        const invalidQuestions = this.quizData.questions.filter(q => 
-          !q.text || 
-          q.options.some(opt => !opt) || 
-          !q.correct
-        );
-
-        if (invalidQuestions.length > 0) {
-          alert('Please complete all questions with text, options and correct answer');
-          return;
-        }
-
-        // Get existing quizzes from sessionStorage
-        const existingQuizzes = JSON.parse(sessionStorage.getItem('quizzes') || '[]');
-        
-        // Find and update the current quiz
-        const quizIndex = existingQuizzes.findIndex(q => q.id === this.quizData.id);
-        if (quizIndex !== -1) {
-          // Map questions to the correct format
-          const formattedQuestions = this.quizData.questions.map(q => ({
-            question: q.text || '', // Ensure question text is set
-            text: q.text || '', // Keep text for backward compatibility
-            options: q.options || ['', '', '', ''],
-            correct: q.correct || ''
-          }));
-
-          // Update the quiz with new data
-          const updatedQuiz = {
-            ...existingQuizzes[quizIndex],
-            name: this.quizData.name,
-            category: this.quizData.category,
-            grade: this.quizData.grade,
-            duration: this.quizData.duration,
-            questions: formattedQuestions.length,
-            savedQuestions: formattedQuestions,
-            lastModified: new Date().toISOString()
-          };
-
-          // Update in the array
-          existingQuizzes[quizIndex] = updatedQuiz;
-
-          // Also update the categoryQuestions
-          const categoryQuestions = JSON.parse(sessionStorage.getItem('categoryQuestions') || '{}');
-          if (!categoryQuestions[this.quizData.category]) {
-            categoryQuestions[this.quizData.category] = [];
-          }
-
-          // Update category questions with the same format
-          categoryQuestions[this.quizData.category] = formattedQuestions;
-
-          // Save both updates
-          sessionStorage.setItem('quizzes', JSON.stringify(existingQuizzes));
-          sessionStorage.setItem('categoryQuestions', JSON.stringify(categoryQuestions));
-        }
-
-        // Simulate API call
-        await new Promise(resolve => setTimeout(resolve, 1000));
-        alert('Quiz saved successfully');
-        
-        // Navigate to the quizzes list
-        this.$router.push('/quizzes');
-      } catch (error) {
-        console.error('Error saving quiz:', error);
-        alert('Failed to save quiz. Please try again.');
-      } finally {
-        this.isSaving = false;
-      }
-    },
-    setCorrectAnswer(questionIndex, option) {
-      this.quizData.questions[questionIndex].correct = option;
-    },
-    addNewQuestion() {
-      this.showAddDialog = true;
-      this.newQuestion = {
-        text: '',
-        options: ['', '', '', ''],
-        correct: null
-      };
-    },
-    setNewQuestionCorrect(option) {
-      this.newQuestion.correct = option;
-    },
-    closeAddDialog() {
-      this.showAddDialog = false;
-    },
-    saveNewQuestion() {
-      if (this.isNewQuestionValid) {
-        this.quizData.questions.push({...this.newQuestion});
-        this.closeAddDialog();
-      }
-    },
-    removeQuestion(index) {
-      this.quizData.questions.splice(index, 1);
-    }
-  },
-  computed: {
-    isNewQuestionValid() {
-      return (
-        this.newQuestion.text.trim() !== '' &&
-        this.newQuestion.options.every(opt => opt.trim() !== '') &&
-        this.newQuestion.correct !== null
-      );
-    }
+  } catch (error) {
+    console.error('Error loading quiz:', error);
+    alert('Failed to load quiz data. Redirecting...');
+    router.push('/quizzes');
   }
-}
+};
+
+const saveChanges = async () => {
+  try {
+    isSaving.value = true;
+    
+    if (!quizData.name || !quizData.category || !quizData.grade || quizData.questions.length === 0) {
+      alert('Please fill in all quiz details and add at least one question.');
+      return;
+    }
+    
+    const invalidQuestion = quizData.questions.find(q => !q.text || q.options.some(opt => !opt) || !q.correct);
+    if (invalidQuestion) {
+      alert('Please complete all questions with text, four options, and a correct answer.');
+      return;
+    }
+
+    const existingQuizzes = JSON.parse(sessionStorage.getItem('quizzes') || '[]');
+    const quizIndex = existingQuizzes.findIndex(q => q.id === quizData.id);
+
+    if (quizIndex !== -1) {
+      const formattedQuestions = quizData.questions.map(q => ({
+        question: q.text,
+        options: q.options,
+        correct: q.correct
+      }));
+
+      const updatedQuiz = {
+        ...existingQuizzes[quizIndex],
+        name: quizData.name,
+        category: quizData.category,
+        grade: quizData.grade,
+        duration: quizData.duration,
+        questions: formattedQuestions.length,
+        savedQuestions: formattedQuestions,
+        lastModified: new Date().toISOString()
+      };
+
+      existingQuizzes[quizIndex] = updatedQuiz;
+      sessionStorage.setItem('quizzes', JSON.stringify(existingQuizzes));
+      
+      const categoryQuestions = JSON.parse(sessionStorage.getItem('categoryQuestions') || '{}');
+      categoryQuestions[quizData.category] = formattedQuestions;
+      sessionStorage.setItem('categoryQuestions', JSON.stringify(categoryQuestions));
+    }
+
+    await new Promise(resolve => setTimeout(resolve, 1000));
+    alert('Quiz saved successfully');
+    router.push('/quizzes');
+
+  } catch (error) {
+    console.error('Error saving quiz:', error);
+    alert('Failed to save quiz.');
+  } finally {
+    isSaving.value = false;
+  }
+};
+
+const setCorrectAnswer = (questionIndex, option) => {
+  quizData.questions[questionIndex].correct = option;
+};
+
+const addNewQuestion = () => {
+  // Reset the reactive newQuestion object
+  Object.assign(newQuestion, {
+    text: '',
+    options: ['', '', '', ''],
+    correct: null
+  });
+  showAddDialog.value = true;
+};
+
+const setNewQuestionCorrect = (option) => {
+  newQuestion.correct = option;
+};
+
+const closeAddDialog = () => {
+  showAddDialog.value = false;
+};
+
+const saveNewQuestion = () => {
+  if (isNewQuestionValid.value) {
+    // Push a copy of the newQuestion object
+    quizData.questions.push({ ...newQuestion });
+    closeAddDialog();
+  }
+};
+
+const removeQuestion = (index) => {
+  quizData.questions.splice(index, 1);
+};
+
+// --- Lifecycle Hook ---
+onMounted(() => {
+  loadQuizData();
+});
 </script>
+
 
 <style scoped>
 .edit-quiz-container {
@@ -551,4 +528,4 @@ export default {
   background-color: #4CAF50 !important;
   color: white !important;
 }
-</style> 
+</style>

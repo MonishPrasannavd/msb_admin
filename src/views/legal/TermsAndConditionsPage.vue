@@ -49,7 +49,6 @@
           <p class="text-body-1 text-grey-darken-1">Click the button above to add terms and conditions.</p>
         </v-card>
 
-        <!-- Add/Edit Terms Dialog -->
         <v-dialog v-model="showDialog" max-width="800px" persistent>
           <v-card class="edit-dialog">
             <v-card-title class="text-h5 pa-4">
@@ -63,7 +62,6 @@
                 theme="snow"
                 toolbar="full"
                 :options="editorOptions"
-                @update:content="handleEditorUpdate"
                 class="editor"
               />
             </v-card-text>
@@ -94,94 +92,88 @@
   </v-container>
 </template>
 
-<script>
-import { QuillEditor } from '@vueup/vue-quill'
-import '@vueup/vue-quill/dist/vue-quill.snow.css'
+<script setup>
+import { ref } from 'vue';
+import { QuillEditor } from '@vueup/vue-quill';
+import '@vueup/vue-quill/dist/vue-quill.snow.css';
 
-export default {
-  name: 'TermsAndConditionsPage',
-  components: {
-    QuillEditor
+// NOTE: Replace with your actual toast notification plugin, e.g., from 'vue-toastification'
+const toast = {
+  success: (msg) => console.log(`SUCCESS: ${msg}`),
+  error: (msg) => console.error(`ERROR: ${msg}`),
+};
+
+// --- State (Replaces data()) ---
+const showDialog = ref(false);
+const termsContent = ref('');
+const isSaving = ref(false);
+const isEditing = ref(false);
+const hasTerms = ref(false);
+
+const editorOptions = {
+  modules: {
+    toolbar: [
+      ['bold', 'italic', 'underline', 'strike'], ['blockquote', 'code-block'],
+      [{ 'header': 1 }, { 'header': 2 }], [{ 'list': 'ordered'}, { 'list': 'bullet' }],
+      [{ 'script': 'sub'}, { 'script': 'super' }], [{ 'indent': '-1'}, { 'indent': '+1' }],
+      [{ 'direction': 'rtl' }], [{ 'size': ['small', false, 'large', 'huge'] }],
+      [{ 'header': [1, 2, 3, 4, 5, 6, false] }], [{ 'color': [] }, { 'background': [] }],
+      [{ 'font': [] }], [{ 'align': [] }],
+      ['clean'], ['link', 'image', 'video']
+    ]
   },
-  data() {
-    return {
-      showDialog: false,
-      termsContent: '',
-      isSaving: false,
-      isEditing: false,
-      hasTerms: false,
-      editorOptions: {
-        modules: {
-          toolbar: [
-            ['bold', 'italic', 'underline', 'strike'],
-            ['blockquote', 'code-block'],
-            [{ 'header': 1 }, { 'header': 2 }],
-            [{ 'list': 'ordered'}, { 'list': 'bullet' }],
-            [{ 'script': 'sub'}, { 'script': 'super' }],
-            [{ 'indent': '-1'}, { 'indent': '+1' }],
-            [{ 'direction': 'rtl' }],
-            [{ 'size': ['small', false, 'large', 'huge'] }],
-            [{ 'header': [1, 2, 3, 4, 5, 6, false] }],
-            [{ 'color': [] }, { 'background': [] }],
-            [{ 'font': [] }],
-            [{ 'align': [] }],
-            ['clean'],
-            ['link', 'image', 'video']
-          ]
-        },
-        placeholder: 'Write your terms and conditions here...'
-      }
-    }
-  },
-  created() {
-    this.loadTerms()
-  },
-  methods: {
-    loadTerms() {
-      const savedTerms = sessionStorage.getItem('termsAndConditions')
-      if (savedTerms) {
-        this.termsContent = savedTerms
-        this.hasTerms = true
-      }
-    },
-    openAddDialog() {
-      this.isEditing = false
-      this.termsContent = ''
-      this.showDialog = true
-    },
-    openEditDialog() {
-      this.isEditing = true
-      this.showDialog = true
-    },
-    closeDialog() {
-      this.showDialog = false
-      if (!this.isEditing) {
-        this.termsContent = ''
-      }
-    },
-    async saveTerms() {
-      try {
-        this.isSaving = true
-        sessionStorage.setItem('termsAndConditions', this.termsContent)
-        
-        // Simulate API call
-        await new Promise(resolve => setTimeout(resolve, 1000))
-        
-        this.closeDialog()
-        this.hasTerms = true
-        this.$toast.success(`Terms & Conditions ${this.isEditing ? 'updated' : 'added'} successfully`)
-      } catch (error) {
-        console.error('Error saving terms:', error)
-        this.$toast.error(`Failed to ${this.isEditing ? 'update' : 'add'} terms. Please try again.`)
-      } finally {
-        this.isSaving = false
-      }
-    },
-    handleEditorUpdate(content) {
-      this.termsContent = content
-    }
+  placeholder: 'Write your terms and conditions here...'
+};
+
+// --- Methods (Replaces methods()) ---
+const loadTerms = () => {
+  const savedTerms = sessionStorage.getItem('termsAndConditions');
+  if (savedTerms) {
+    termsContent.value = savedTerms;
+    hasTerms.value = true;
   }
-}
+};
+
+const openAddDialog = () => {
+  isEditing.value = false;
+  termsContent.value = ''; // Clear for new entry
+  showDialog.value = true;
+};
+
+const openEditDialog = () => {
+  isEditing.value = true;
+  // Ensure the latest version is loaded from storage for editing
+  termsContent.value = sessionStorage.getItem('termsAndConditions') || '';
+  showDialog.value = true;
+};
+
+const closeDialog = () => {
+  showDialog.value = false;
+  // On close, reload the original terms to discard any unsaved changes
+  loadTerms();
+};
+
+const saveTerms = async () => {
+  try {
+    isSaving.value = true;
+    sessionStorage.setItem('termsAndConditions', termsContent.value);
+    
+    // Simulate API call
+    await new Promise(resolve => setTimeout(resolve, 1000));
+    
+    showDialog.value = false; // Close dialog
+    hasTerms.value = !!termsContent.value;
+    toast.success(`Terms & Conditions ${isEditing.value ? 'updated' : 'added'} successfully`);
+  } catch (error) {
+    console.error('Error saving terms:', error);
+    toast.error(`Failed to ${isEditing.value ? 'update' : 'add'} terms. Please try again.`);
+  } finally {
+    isSaving.value = false;
+  }
+};
+
+// --- Lifecycle Hook (Replaces created()) ---
+loadTerms();
 </script>
 
 <style>
@@ -304,4 +296,4 @@ export default {
 .edit-dialog {
   border-radius: 15px;
 }
-</style> 
+</style>

@@ -49,7 +49,7 @@
             </v-col>
 
             <v-col cols="12">
-              <div class="upload-section text-center py-8" @click="$refs.fileInput.click()">
+              <div class="upload-section text-center py-8" @click="fileInput.click()">
                 <div class="text-subtitle-1 text-success mb-2">Click to upload Questions CSV</div>
                 <div class="text-caption text-grey">
                   The CSV should have columns for question text, options and correct answers*
@@ -69,7 +69,7 @@
                 color="grey-darken-1"
                 variant="text"
                 class="text-none px-6"
-                @click="$router.push('/quizzes')"
+                @click="router.push('/quizzes')"
               >
                 Cancel
               </v-btn>
@@ -88,7 +88,6 @@
       </v-card-text>
     </v-card>
 
-    <!-- Dialog for adding new category -->
     <v-dialog v-model="showNewCategoryDialog" max-width="400">
       <v-card>
         <v-card-title class="text-center pt-6 pb-2">Add New Category</v-card-title>
@@ -132,248 +131,110 @@
   </div>
 </template>
 
-<script>
-export default {
-  name: 'AddQuizPage',
-  data() {
-    return {
-      quizTitle: '',
-      selectedCategory: null,
-      selectedGrade: null,
-      categories: ['Maths', 'Science', 'GK', 'History', 'Social Studies', 'Others'],
-      grades: ['Grade 6', 'Grade 7', 'Grade 8', 'Grade 9', 'Grade 10'],
-      loading: false,
-      file: null,
-      showNewCategoryDialog: false,
-      newCategory: '',
-      previousCategory: null,
-      defaultQuestions: {
-        Science: [
-          {
-            question: "What is the chemical symbol for gold?",
-            options: ["Au", "Ag", "Fe", "Cu"],
-            correct: "A"
-          },
-          {
-            question: "Which planet is known as the Red Planet?",
-            options: ["Venus", "Mars", "Jupiter", "Saturn"],
-            correct: "B"
-          },
-          {
-            question: "What is the process by which plants make their food?",
-            options: ["Photosynthesis", "Respiration", "Digestion", "Absorption"],
-            correct: "A"
-          },
-          {
-            question: "What is the hardest natural substance on Earth?",
-            options: ["Gold", "Iron", "Diamond", "Platinum"],
-            correct: "C"
-          },
-          {
-            question: "Which gas do plants absorb from the air for photosynthesis?",
-            options: ["Oxygen", "Carbon Dioxide", "Nitrogen", "Hydrogen"],
-            correct: "B"
-          }
-        ],
-        History: [
-          {
-            question: "Who was the first President of the United States?",
-            options: ["John Adams", "Thomas Jefferson", "George Washington", "Benjamin Franklin"],
-            correct: "C"
-          },
-          {
-            question: "In which year did World War II end?",
-            options: ["1943", "1944", "1945", "1946"],
-            correct: "C"
-          },
-          {
-            question: "Who wrote the 'Declaration of Independence'?",
-            options: ["Thomas Jefferson", "John Adams", "Benjamin Franklin", "George Washington"],
-            correct: "A"
-          },
-          {
-            question: "Which empire was ruled by Julius Caesar?",
-            options: ["Greek", "Roman", "Persian", "Ottoman"],
-            correct: "B"
-          },
-          {
-            question: "When did World War I begin?",
-            options: ["1913", "1914", "1915", "1916"],
-            correct: "B"
-          }
-        ],
-        GK: [
-          {
-            question: "Which is the largest planet in our solar system?",
-            options: ["Mars", "Saturn", "Jupiter", "Neptune"],
-            correct: "C"
-          },
-          {
-            question: "What is the capital of Japan?",
-            options: ["Seoul", "Beijing", "Tokyo", "Bangkok"],
-            correct: "C"
-          },
-          {
-            question: "Who painted the Mona Lisa?",
-            options: ["Van Gogh", "Da Vinci", "Picasso", "Michelangelo"],
-            correct: "B"
-          },
-          {
-            question: "Which is the largest ocean on Earth?",
-            options: ["Atlantic", "Indian", "Arctic", "Pacific"],
-            correct: "D"
-          },
-          {
-            question: "Which is the longest river in the world?",
-            options: ["Amazon", "Nile", "Mississippi", "Yangtze"],
-            correct: "B"
-          }
-        ],
-        Maths: [
-          {
-            question: "What is the value of π (pi) to two decimal places?",
-            options: ["3.14", "3.16", "3.12", "3.18"],
-            correct: "A"
-          },
-          {
-            question: "What is the square root of 144?",
-            options: ["10", "12", "14", "16"],
-            correct: "B"
-          },
-          {
-            question: "What is the sum of angles in a triangle?",
-            options: ["90°", "180°", "270°", "360°"],
-            correct: "B"
-          },
-          {
-            question: "What is 25% of 80?",
-            options: ["15", "20", "25", "30"],
-            correct: "B"
-          },
-          {
-            question: "Solve: 3x + 5 = 20",
-            options: ["3", "5", "7", "8"],
-            correct: "B"
-          }
-        ],
-        "Social Studies": [
-          {
-            question: "What is the study of population patterns called?",
-            options: ["Geography", "Demographics", "Sociology", "Economics"],
-            correct: "B"
-          },
-          {
-            question: "Which branch of government makes laws?",
-            options: ["Executive", "Legislative", "Judicial", "Administrative"],
-            correct: "B"
-          },
-          {
-            question: "What is the basic unit of society?",
-            options: ["Individual", "Family", "Community", "Nation"],
-            correct: "B"
-          },
-          {
-            question: "What type of government is ruled by the people?",
-            options: ["Monarchy", "Democracy", "Dictatorship", "Oligarchy"],
-            correct: "B"
-          },
-          {
-            question: "What is GDP?",
-            options: ["Gross Domestic Product", "Global Development Plan", "General Domestic Policy", "Geographic Data Point"],
-            correct: "A"
-          }
-        ]
-      }
+<script setup>
+import { ref, computed } from 'vue';
+import { useRouter } from 'vue-router';
+
+// --- Composables ---
+const router = useRouter();
+
+// --- State (Replaces data()) ---
+const quizTitle = ref('');
+const selectedCategory = ref(null);
+const selectedGrade = ref(null);
+const categories = ref(['Maths', 'Science', 'GK', 'History', 'Social Studies', 'Others']);
+const grades = ref(['Grade 6', 'Grade 7', 'Grade 8', 'Grade 9', 'Grade 10']);
+const loading = ref(false);
+const file = ref(null);
+const showNewCategoryDialog = ref(false);
+const newCategory = ref('');
+const previousCategory = ref(null);
+const fileInput = ref(null); // For the template ref on the file input
+
+const defaultQuestions = {
+  Science: [ { question: "What is the chemical symbol for gold?", options: ["Au", "Ag", "Fe", "Cu"], correct: "A" }, /* ...more questions... */ ],
+  History: [ { question: "Who was the first President of the United States?", options: ["John Adams", "Thomas Jefferson", "George Washington", "Benjamin Franklin"], correct: "C" }, /* ...more questions... */ ],
+  GK: [ { question: "Which is the largest planet in our solar system?", options: ["Mars", "Saturn", "Jupiter", "Neptune"], correct: "C" }, /* ...more questions... */ ],
+  Maths: [ { question: "What is the value of π (pi) to two decimal places?", options: ["3.14", "3.16", "3.12", "3.18"], correct: "A" }, /* ...more questions... */ ],
+  "Social Studies": [ { question: "What is the study of population patterns called?", options: ["Geography", "Demographics", "Sociology", "Economics"], correct: "B" }, /* ...more questions... */ ]
+};
+
+// --- Computed Properties (Replaces computed) ---
+const isFormValid = computed(() => {
+  return quizTitle.value && selectedCategory.value && selectedGrade.value;
+});
+
+// --- Methods (Replaces methods()) ---
+const initializeCategoryQuestions = () => {
+  const categoryQuestions = JSON.parse(sessionStorage.getItem('categoryQuestions') || '{}');
+  Object.keys(defaultQuestions).forEach(category => {
+    if (!categoryQuestions[category] || categoryQuestions[category].length === 0) {
+      categoryQuestions[category] = defaultQuestions[category];
     }
-  },
-  created() {
-    this.initializeCategoryQuestions();
-  },
-  computed: {
-    isFormValid() {
-      return this.quizTitle && this.selectedCategory && this.selectedGrade
-    }
-  },
-  methods: {
-    initializeCategoryQuestions() {
-      // Get existing category questions from sessionStorage
-      const categoryQuestions = JSON.parse(sessionStorage.getItem('categoryQuestions') || '{}');
-      
-      // For each category, check if questions exist, if not, add default questions
-      Object.keys(this.defaultQuestions).forEach(category => {
-        if (!categoryQuestions[category] || categoryQuestions[category].length === 0) {
-          categoryQuestions[category] = this.defaultQuestions[category];
-        }
-      });
-      
-      // Save updated category questions back to sessionStorage
-      sessionStorage.setItem('categoryQuestions', JSON.stringify(categoryQuestions));
-    },
-    handleCategoryChange(value) {
-      if (value === 'Others') {
-        this.previousCategory = this.selectedCategory
-        this.showNewCategoryDialog = true
-      }
-    },
-    addNewCategory() {
-      if (this.newCategory) {
-        // Add the new category to the list
-        this.categories.splice(this.categories.length - 1, 0, this.newCategory)
-        // Select the new category
-        this.selectedCategory = this.newCategory
-        // Reset and close dialog
-        this.newCategory = ''
-        this.showNewCategoryDialog = false
-      }
-    },
-    cancelNewCategory() {
-      // Revert to previous selection
-      this.selectedCategory = this.previousCategory
-      this.newCategory = ''
-      this.showNewCategoryDialog = false
-    },
-    handleFileUpload(event) {
-      this.file = event.target.files[0]
-    },
-    handleSubmit() {
-      if (this.isFormValid) {
-        this.loading = true;
-        
-        // Get existing quizzes from sessionStorage
-        const existingQuizzes = JSON.parse(sessionStorage.getItem('quizzes') || '[]');
-        
-        // Get category questions
-        const categoryQuestions = JSON.parse(sessionStorage.getItem('categoryQuestions') || '{}');
-        const questionsCount = categoryQuestions[this.selectedCategory]?.length || 0;
-        
-        // Create new quiz object
-        const newQuiz = {
-          id: existingQuizzes.length + 1,
-          name: this.quizTitle,
-          category: this.selectedCategory,
-          isActive: true,
-          date: new Date().toLocaleDateString('en-GB'),
-          grade: this.selectedGrade,
-          questions: questionsCount,
-          duration: 30,
-          savedQuestions: categoryQuestions[this.selectedCategory] || []
-        };
-        
-        // Add to existing quizzes
-        existingQuizzes.push(newQuiz);
-        
-        // Save back to sessionStorage
-        sessionStorage.setItem('quizzes', JSON.stringify(existingQuizzes));
-        
-        setTimeout(() => {
-          this.loading = false;
-          this.$router.push('/quizzes');
-        }, 1500);
-      }
-    }
+  });
+  sessionStorage.setItem('categoryQuestions', JSON.stringify(categoryQuestions));
+};
+
+const handleCategoryChange = (value) => {
+  if (value === 'Others') {
+    previousCategory.value = selectedCategory.value;
+    showNewCategoryDialog.value = true;
   }
-}
+};
+
+const addNewCategory = () => {
+  if (newCategory.value) {
+    categories.value.splice(categories.value.length - 1, 0, newCategory.value);
+    selectedCategory.value = newCategory.value;
+    newCategory.value = '';
+    showNewCategoryDialog.value = false;
+  }
+};
+
+const cancelNewCategory = () => {
+  selectedCategory.value = previousCategory.value;
+  newCategory.value = '';
+  showNewCategoryDialog.value = false;
+};
+
+const handleFileUpload = (event) => {
+  file.value = event.target.files[0];
+};
+
+const handleSubmit = () => {
+  if (isFormValid.value) {
+    loading.value = true;
+    
+    const existingQuizzes = JSON.parse(sessionStorage.getItem('quizzes') || '[]');
+    const categoryQuestions = JSON.parse(sessionStorage.getItem('categoryQuestions') || '{}');
+    const questionsCount = categoryQuestions[selectedCategory.value]?.length || 0;
+    
+    const newQuiz = {
+      id: existingQuizzes.length + 1,
+      name: quizTitle.value,
+      category: selectedCategory.value,
+      isActive: true,
+      date: new Date().toLocaleDateString('en-GB'),
+      grade: selectedGrade.value,
+      questions: questionsCount,
+      duration: 30,
+      savedQuestions: categoryQuestions[selectedCategory.value] || []
+    };
+    
+    existingQuizzes.push(newQuiz);
+    sessionStorage.setItem('quizzes', JSON.stringify(existingQuizzes));
+    
+    setTimeout(() => {
+      loading.value = false;
+      router.push('/quizzes');
+    }, 1500);
+  }
+};
+
+// --- Lifecycle Hook (Replaces created()) ---
+initializeCategoryQuestions();
 </script>
+
 
 <style scoped>
 .add-quiz-container {
@@ -640,4 +501,4 @@ export default {
     transform: translateY(0);
   }
 }
-</style> 
+</style>

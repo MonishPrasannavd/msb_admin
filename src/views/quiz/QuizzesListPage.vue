@@ -1,7 +1,6 @@
 <template>
   <div class="quiz-list-container">
     <v-row no-gutters class="px-2" style="height: 100vh">
-      <!-- Middle Categories Section -->
       <v-col
         cols="3"
         class="categories-section d-flex flex-column nav-border"
@@ -58,7 +57,7 @@
             <v-btn
               color="success"
               class="text-none mb-1 add-question-btn"
-              @click="$router.push('/quizzes/add')"
+              @click="router.push('/quizzes/add')"
               size="small"
               block
             >
@@ -69,9 +68,7 @@
         </div>
       </v-col>
 
-      <!-- Right Content Section -->
       <v-col cols="9" class="content-section px-5">
-        <!-- Search and Status Bar -->
         <div class="py-3 d-flex align-center">
           <v-text-field
               v-model="search" 
@@ -113,8 +110,7 @@
           </div>
           </div>
           
-        <!-- Quiz Cards -->
-            <div 
+        <div 
           class="quiz-cards pa-6"
           style="height: calc(100vh - 146px); overflow-y: auto"
         >
@@ -200,7 +196,6 @@
       </v-col>
     </v-row>
     
-    <!-- View Quiz Modal -->
     <v-dialog v-model="viewDialog" width="700">
       <v-card class="quiz-modal rounded-lg">
         <v-card-title class="d-flex flex-column align-start pa-6">
@@ -286,372 +281,116 @@
   </div>
 </template>
 
-<script>
-export default {
-  name: "QuizzesListPage",
-  data() {
-    return {
-      search: "",
-      subjects: ["Maths", "Science", "GK", "History", "Social Studies"],
-      selectedSubject: null,
-      viewDialog: false,
-      selectedQuiz: null,
-      categoryQuestions: {
-        Maths: [
-          {
-            question: "What is the value of x in the equation 2x + 5 = 15?",
-            options: ["4", "5", "6", "7"],
-            correct: "B"
-          },
-          {
-            question: "Simplify the expression: 3(x + 2) - 4x",
-            options: ["-x + 6", "2x + 6", "-x + 2", "2x + 2"],
-            correct: "A"
-          },
-          {
-            question: "Find the area of a circle with radius 7 cm (use π = 3.14)",
-            options: ["153.86 cm²", "43.96 cm²", "87.92 cm²", "21.98 cm²"],
-            correct: "A"
-          },
-          {
-            question: "What is the sum of angles in a triangle?",
-            options: ["90°", "180°", "270°", "360°"],
-            correct: "B"
-          },
-          {
-            question: "What is the Pythagorean theorem?",
-            options: ["a² + b² = c²", "a + b = c", "a × b = c", "a³ + b³ = c³"],
-            correct: "A"
-          },
-          {
-            question: "What is the value of π (pi) to two decimal places?",
-            options: ["3.14", "3.16", "3.12", "3.18"],
-            correct: "A"
-          }
-        ],
-        Science: [
-          {
-            question: "What is the unit of force in the SI system?",
-            options: ["Watt", "Newton", "Joule", "Pascal"],
-            correct: "B"
-          },
-          {
-            question: "Which gas is most abundant in Earth's atmosphere?",
-            options: ["Oxygen", "Carbon Dioxide", "Nitrogen", "Hydrogen"],
-            correct: "C"
-          },
-          {
-            question: "What is the chemical symbol for gold?",
-            options: ["Ag", "Au", "Fe", "Cu"],
-            correct: "B"
-          },
-          {
-            question: "What is the process by which plants make their food?",
-            options: ["Photosynthesis", "Respiration", "Transpiration", "Digestion"],
-            correct: "A"
-          },
-          {
-            question: "What is the smallest unit of matter?",
-            options: ["Atom", "Molecule", "Cell", "Electron"],
-            correct: "A"
-          },
-          {
-            question: "Which planet is known as the Red Planet?",
-            options: ["Venus", "Mars", "Jupiter", "Mercury"],
-            correct: "B"
-          }
-        ],
-        GK: [
-          {
-            question: "Which is the largest planet in our solar system?",
-            options: ["Mars", "Saturn", "Jupiter", "Neptune"],
-            correct: "C"
-          },
-          {
-            question: "Who wrote 'Romeo and Juliet'?",
-            options: ["Charles Dickens", "William Shakespeare", "Jane Austen", "Mark Twain"],
-            correct: "B"
-          },
-          {
-            question: "What is the capital of Japan?",
-            options: ["Seoul", "Beijing", "Tokyo", "Bangkok"],
-            correct: "C"
-          },
-          {
-            question: "Which is the largest ocean on Earth?",
-            options: ["Atlantic", "Indian", "Arctic", "Pacific"],
-            correct: "D"
-          },
-          {
-            question: "Which is the longest river in the world?",
-            options: ["Amazon", "Nile", "Mississippi", "Yangtze"],
-            correct: "B"
-          },
-          {
-            question: "Who painted the Mona Lisa?",
-            options: ["Van Gogh", "Da Vinci", "Picasso", "Michelangelo"],
-            correct: "B"
-          }
-        ],
-        History: [
-          {
-            question: "Who was the first President of the United States?",
-            options: ["Thomas Jefferson", "John Adams", "George Washington", "Benjamin Franklin"],
-            correct: "C"
-          },
-          {
-            question: "In which year did World War II end?",
-            options: ["1943", "1944", "1945", "1946"],
-            correct: "C"
-          },
-          {
-            question: "Which empire was ruled by Julius Caesar?",
-            options: ["Greek", "Persian", "Roman", "Ottoman"],
-            correct: "C"
-          },
-          {
-            question: "Who wrote the 'Declaration of Independence'?",
-            options: ["Thomas Jefferson", "Benjamin FraFnklin", "John Adams", "George Washington"],
-            correct: "A"
-          },
-          {
-            question: "When did World War I begin?",
-            options: ["1914", "1915", "1916", "1917"],
-            correct: "A"
-          },
-          {
-            question: "Who was the first Emperor of China?",
-            options: ["Qin Shi Huang", "Sun Yat-sen", "Kublai Khan", "Wu Zetian"],
-            correct: "A"
-          }
-        ],
-        "Social Studies": [
-          {
-            question: "What is the study of population patterns called?",
-            options: ["Geography", "Demographics", "Sociology", "Economics"],
-            correct: "B"
-          },
-          {
-            question: "Which branch of government makes laws?",
-            options: ["Executive", "Legislative", "Judicial", "Administrative"],
-            correct: "B"
-          },
-          {
-            question: "What is the basic unit of society?",
-            options: ["Individual", "Family", "Community", "Nation"],
-            correct: "B"
-          },
-          {
-            question: "What type of government is ruled by the people?",
-            options: ["Monarchy", "Democracy", "Dictatorship", "Oligarchy"],
-            correct: "B"
-          },
-          {
-            question: "What is GDP?",
-            options: ["Gross Domestic Product", "Global Development Plan", "General Domestic Policy", "Geographic Data Point"],
-            correct: "A"
-          },
-          {
-            question: "What is the main function of the United Nations?",
-            options: ["World Trade", "International Peace", "Space Exploration", "Sports Events"],
-            correct: "B"
-          }
-        ]
-      },
-      quizzes: [],
-    };
-  },
-  created() {
-    // Load saved category questions if they exist
+<script setup>
+import { ref, computed, onMounted } from 'vue';
+import { useRouter } from 'vue-router';
+
+// --- Composables ---
+const router = useRouter();
+
+// --- State ---
+const search = ref("");
+const subjects = ["Maths", "Science", "GK", "History", "Social Studies"];
+const selectedSubject = ref(null);
+const viewDialog = ref(false);
+const selectedQuiz = ref(null);
+const quizzes = ref([]);
+const categoryQuestions = ref({
+  Maths: [ { question: "What is the value of x in the equation 2x + 5 = 15?", options: ["4", "5", "6", "7"], correct: "B" } /* ... */ ],
+  Science: [ { question: "What is the unit of force in the SI system?", options: ["Watt", "Newton", "Joule", "Pascal"], correct: "B" } /* ... */ ],
+  GK: [ { question: "Which is the largest planet in our solar system?", options: ["Mars", "Saturn", "Jupiter", "Neptune"], correct: "C" } /* ... */ ],
+  History: [ { question: "Who was the first President of the United States?", options: ["Thomas Jefferson", "John Adams", "George Washington", "Benjamin Franklin"], correct: "C" } /* ... */ ],
+  "Social Studies": [ { question: "What is the study of population patterns called?", options: ["Geography", "Demographics", "Sociology", "Economics"], correct: "B" } /* ... */ ]
+});
+
+// --- Computed ---
+const filteredQuizzes = computed(() => {
+  let filtered = quizzes.value;
+
+  if (selectedSubject.value) {
+    filtered = filtered.filter(quiz => quiz.category === selectedSubject.value);
+  }
+
+  if (search.value) {
+    const searchLower = search.value.toLowerCase();
+    filtered = filtered.filter(quiz =>
+      quiz.name.toLowerCase().includes(searchLower) ||
+      quiz.category.toLowerCase().includes(searchLower) ||
+      quiz.grade.toLowerCase().includes(searchLower)
+    );
+  }
+  return filtered;
+});
+
+const activeQuizCount = computed(() => quizzes.value.filter(q => q.isActive).length);
+const disabledQuizCount = computed(() => quizzes.value.filter(q => !q.isActive).length);
+
+// --- Methods ---
+const loadQuizzes = () => {
+  try {
     const savedCategoryQuestions = sessionStorage.getItem('categoryQuestions');
-    if (savedCategoryQuestions) {
-      this.categoryQuestions = JSON.parse(savedCategoryQuestions);
+    if (!savedCategoryQuestions) {
+      sessionStorage.setItem('categoryQuestions', JSON.stringify(categoryQuestions.value));
+    } else {
+      categoryQuestions.value = JSON.parse(savedCategoryQuestions);
     }
-    
-    // Load quizzes
-    this.loadQuizzes();
-  },
-  computed: {
-    filteredQuizzes() {
-      let filtered = this.quizzes;
 
-      // Filter by category if selected
-      if (this.selectedSubject) {
-        filtered = filtered.filter(
-          (quiz) => quiz.category === this.selectedSubject
-        );
-      }
-
-      // Filter by search term
-      if (this.search) {
-        const searchLower = this.search.toLowerCase();
-        filtered = filtered.filter(
-          (quiz) =>
-            quiz.name.toLowerCase().includes(searchLower) ||
-            quiz.category.toLowerCase().includes(searchLower) ||
-            quiz.grade.toLowerCase().includes(searchLower)
-        );
-      }
-
-      return filtered;
-    },
-    activeQuizCount() {
-      return this.quizzes.filter((quiz) => quiz.isActive).length;
-    },
-    disabledQuizCount() {
-      return this.quizzes.filter((quiz) => !quiz.isActive).length;
-    },
-  },
-  methods: {
-    loadQuizzes() {
-      try {
-        // First ensure category questions are initialized
-        const existingCategoryQuestions = sessionStorage.getItem('categoryQuestions');
-        if (!existingCategoryQuestions) {
-          sessionStorage.setItem('categoryQuestions', JSON.stringify(this.categoryQuestions));
-        }
-
-        // Then load or initialize quizzes
-        const savedQuizzes = sessionStorage.getItem('quizzes');
-        if (savedQuizzes) {
-          this.quizzes = JSON.parse(savedQuizzes);
-        } else {
-          const defaultQuizzes = [
-            {
-              id: 1,
-              name: "Basic Mathematics Quiz",
-              category: "Maths",
-              isActive: true,
-              date: "01-03-2025",
-              grade: "Grade 7",
-              questions: this.categoryQuestions['Maths'].length,
-              duration: 20,
-              savedQuestions: this.categoryQuestions['Maths']
-            },
-            {
-              id: 2,
-              name: "Advanced Physics Test",
-              category: "Science",
-              isActive: false,
-              date: "05-03-2025",
-              grade: "Grade 9",
-              questions: this.categoryQuestions['Science'].length,
-              duration: 30,
-              savedQuestions: this.categoryQuestions['Science']
-            },
-            {
-              id: 3,
-              name: "World History Quiz",
-              category: "History",
-              isActive: true,
-              date: "10-03-2025",
-              grade: "Grade 8",
-              questions: this.categoryQuestions['History'].length,
-              duration: 35,
-              savedQuestions: this.categoryQuestions['History']
-            },
-            {
-              id: 4,
-              name: "Current Affairs Test",
-              category: "GK",
-              isActive: true,
-              date: "15-03-2025",
-              grade: "Grade 6",
-              questions: this.categoryQuestions['GK'].length,
-              duration: 40,
-              savedQuestions: this.categoryQuestions['GK']
-            },
-            {
-              id: 5,
-              name: "Civics and Society",
-              category: "Social Studies",
-              isActive: false,
-              date: "20-03-2025",
-              grade: "Grade 7",
-              questions: this.categoryQuestions['Social Studies'].length,
-              duration: 25,
-              savedQuestions: this.categoryQuestions['Social Studies']
-            }
-          ];
-          
-          sessionStorage.setItem('quizzes', JSON.stringify(defaultQuizzes));
-          this.quizzes = defaultQuizzes;
-        }
-      } catch (error) {
-        console.error('Error loading quizzes:', error);
-      }
-    },
-    openViewDialog(quiz) {
-      this.selectedQuiz = quiz;
-      this.viewDialog = true;
-    },
-    editQuiz(quiz) {
-      try {
-        // Get the questions for this quiz's category
-        const categoryQuestions = this.categoryQuestions[quiz.category] || [];
-        
-        // If the quiz has saved questions, use those, otherwise use category questions
-        let quizQuestions;
-        if (quiz.savedQuestions && quiz.savedQuestions.length > 0) {
-          quizQuestions = quiz.savedQuestions;
-        } else {
-          // Map the category questions to match our edit page structure
-          quizQuestions = categoryQuestions.map(q => ({
-            text: q.question,
-            options: q.options,
-            correct: q.correct
-          }));
-
-          // Update the quiz's questions count
-          quiz.questions = quizQuestions.length;
-        }
-
-        // Create the complete quiz data with questions
-        const completeQuizData = {
-          ...quiz,
-          questions: quizQuestions
-        };
-
-        // Log the data being stored (for debugging)
-        console.log('Storing quiz data for editing:', completeQuizData);
-
-        // Store the complete quiz data in sessionStorage
-        sessionStorage.setItem('editQuizData', JSON.stringify(completeQuizData));
-        
-        // Navigate to edit page
-        this.$router.push(`/quizzes/${quiz.id}/edit`);
-      } catch (error) {
-        console.error('Error preparing quiz for edit:', error);
-        alert('Failed to prepare quiz for editing');
-      }
-    },
-    getQuizQuestions(category) {
-      try {
-        // First check if the selected quiz has saved questions
-        if (this.selectedQuiz && this.selectedQuiz.savedQuestions) {
-          return this.selectedQuiz.savedQuestions.map(q => ({
-            question: q.question || q.text || '', // Handle both formats
-            options: q.options || [],
-            correct: q.correct
-          }));
-        }
-        
-        // Fallback to category questions
-        const categoryQuestions = this.categoryQuestions[category];
-        if (!categoryQuestions) {
-          console.warn(`No questions found for category: ${category}`);
-          return [];
-        }
-        
-        return categoryQuestions;
-      } catch (error) {
-        console.error('Error getting quiz questions:', error);
-        return [];
-      }
+    const savedQuizzes = sessionStorage.getItem('quizzes');
+    if (savedQuizzes) {
+      quizzes.value = JSON.parse(savedQuizzes);
+    } else {
+      const defaultQuizzes = [
+        { id: 1, name: "Basic Mathematics Quiz", category: "Maths", isActive: true, date: "01-03-2025", grade: "Grade 7", questions: categoryQuestions.value['Maths'].length, duration: 20, savedQuestions: categoryQuestions.value['Maths'] },
+        { id: 2, name: "Advanced Physics Test", category: "Science", isActive: false, date: "05-03-2025", grade: "Grade 9", questions: categoryQuestions.value['Science'].length, duration: 30, savedQuestions: categoryQuestions.value['Science'] },
+        { id: 3, name: "World History Quiz", category: "History", isActive: true, date: "10-03-2025", grade: "Grade 8", questions: categoryQuestions.value['History'].length, duration: 35, savedQuestions: categoryQuestions.value['History'] },
+        { id: 4, name: "Current Affairs Test", category: "GK", isActive: true, date: "15-03-2025", grade: "Grade 6", questions: categoryQuestions.value['GK'].length, duration: 40, savedQuestions: categoryQuestions.value['GK'] },
+        { id: 5, name: "Civics and Society", category: "Social Studies", isActive: false, date: "20-03-2025", grade: "Grade 7", questions: categoryQuestions.value['Social Studies'].length, duration: 25, savedQuestions: categoryQuestions.value['Social Studies'] }
+      ];
+      sessionStorage.setItem('quizzes', JSON.stringify(defaultQuizzes));
+      quizzes.value = defaultQuizzes;
     }
-  },
+  } catch (error) {
+    console.error('Error loading quizzes:', error);
+  }
 };
+
+const openViewDialog = (quiz) => {
+  selectedQuiz.value = quiz;
+  viewDialog.value = true;
+};
+
+const editQuiz = (quiz) => {
+  try {
+    sessionStorage.setItem('editQuizData', JSON.stringify(quiz));
+    router.push(`/quizzes/${quiz.id}/edit`);
+  } catch (error) {
+    console.error('Error preparing quiz for edit:', error);
+    alert('Failed to prepare quiz for editing.');
+  }
+};
+
+const getQuizQuestions = (category) => {
+  try {
+    if (selectedQuiz.value && selectedQuiz.value.savedQuestions) {
+      return selectedQuiz.value.savedQuestions.map(q => ({
+        question: q.question || q.text || '',
+        options: q.options || [],
+        correct: q.correct
+      }));
+    }
+    return categoryQuestions.value[category] || [];
+  } catch (error) {
+    console.error('Error getting quiz questions:', error);
+    return [];
+  }
+};
+
+// --- Lifecycle Hook ---
+onMounted(() => {
+  loadQuizzes();
+});
 </script>
+
 
 <style scoped>
 .quiz-list-container {
@@ -1104,4 +843,5 @@ export default {
 .gap-2 {
   gap: 8px;
 }
-</style> 
+</style>
+<!-- I have converted all of them from Options API to Composition API. Please verify if I have done it correctly. If I have done it correctly, then tell me what should I do next? -->

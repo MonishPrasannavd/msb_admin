@@ -49,7 +49,6 @@
           <p class="text-body-1 text-grey-darken-1">Click the button above to add privacy policy.</p>
         </v-card>
 
-        <!-- Add/Edit Policy Dialog -->
         <v-dialog v-model="showDialog" max-width="800px" persistent>
           <v-card class="edit-dialog">
             <v-card-title class="text-h5 pa-4">
@@ -63,7 +62,6 @@
                 theme="snow"
                 toolbar="full"
                 :options="editorOptions"
-                @update:content="handleEditorUpdate"
                 class="editor"
               />
             </v-card-text>
@@ -94,94 +92,90 @@
   </v-container>
 </template>
 
-<script>
-import { QuillEditor } from '@vueup/vue-quill'
-import '@vueup/vue-quill/dist/vue-quill.snow.css'
+<script setup>
+import { ref } from 'vue';
+import { QuillEditor } from '@vueup/vue-quill';
+import '@vueup/vue-quill/dist/vue-quill.snow.css';
 
-export default {
-  name: 'PrivacyPolicyPage',
-  components: {
-    QuillEditor
+// NOTE: Replace with your actual toast notification plugin, e.g., from 'vue-toastification'
+const toast = {
+  success: (msg) => console.log(`SUCCESS: ${msg}`),
+  error: (msg) => console.error(`ERROR: ${msg}`),
+};
+
+// --- State (Replaces data()) ---
+const showDialog = ref(false);
+const policyContent = ref('');
+const isSaving = ref(false);
+const isEditing = ref(false);
+const hasPolicy = ref(false);
+
+const editorOptions = {
+  modules: {
+    toolbar: [
+      ['bold', 'italic', 'underline', 'strike'], ['blockquote', 'code-block'],
+      [{ 'header': 1 }, { 'header': 2 }], [{ 'list': 'ordered'}, { 'list': 'bullet' }],
+      [{ 'script': 'sub'}, { 'script': 'super' }], [{ 'indent': '-1'}, { 'indent': '+1' }],
+      [{ 'direction': 'rtl' }], [{ 'size': ['small', false, 'large', 'huge'] }],
+      [{ 'header': [1, 2, 3, 4, 5, 6, false] }], [{ 'color': [] }, { 'background': [] }],
+      [{ 'font': [] }], [{ 'align': [] }],
+      ['clean'], ['link', 'image', 'video']
+    ]
   },
-  data() {
-    return {
-      showDialog: false,
-      policyContent: '',
-      isSaving: false,
-      isEditing: false,
-      hasPolicy: false,
-      editorOptions: {
-        modules: {
-          toolbar: [
-            ['bold', 'italic', 'underline', 'strike'],
-            ['blockquote', 'code-block'],
-            [{ 'header': 1 }, { 'header': 2 }],
-            [{ 'list': 'ordered'}, { 'list': 'bullet' }],
-            [{ 'script': 'sub'}, { 'script': 'super' }],
-            [{ 'indent': '-1'}, { 'indent': '+1' }],
-            [{ 'direction': 'rtl' }],
-            [{ 'size': ['small', false, 'large', 'huge'] }],
-            [{ 'header': [1, 2, 3, 4, 5, 6, false] }],
-            [{ 'color': [] }, { 'background': [] }],
-            [{ 'font': [] }],
-            [{ 'align': [] }],
-            ['clean'],
-            ['link', 'image', 'video']
-          ]
-        },
-        placeholder: 'Write your privacy policy here...'
-      }
-    }
-  },
-  created() {
-    this.loadPolicy()
-  },
-  methods: {
-    loadPolicy() {
-      const savedPolicy = sessionStorage.getItem('privacyPolicy')
-      if (savedPolicy) {
-        this.policyContent = savedPolicy
-        this.hasPolicy = true
-      }
-    },
-    openAddDialog() {
-      this.isEditing = false
-      this.policyContent = ''
-      this.showDialog = true
-    },
-    openEditDialog() {
-      this.isEditing = true
-      this.showDialog = true
-    },
-    closeDialog() {
-      this.showDialog = false
-      if (!this.isEditing) {
-        this.policyContent = ''
-      }
-    },
-    async savePolicy() {
-      try {
-        this.isSaving = true
-        sessionStorage.setItem('privacyPolicy', this.policyContent)
-        
-        // Simulate API call
-        await new Promise(resolve => setTimeout(resolve, 1000))
-        
-        this.closeDialog()
-        this.hasPolicy = true
-        this.$toast.success(`Privacy Policy ${this.isEditing ? 'updated' : 'added'} successfully`)
-      } catch (error) {
-        console.error('Error saving policy:', error)
-        this.$toast.error(`Failed to ${this.isEditing ? 'update' : 'add'} policy. Please try again.`)
-      } finally {
-        this.isSaving = false
-      }
-    },
-    handleEditorUpdate(content) {
-      this.policyContent = content
-    }
+  placeholder: 'Write your privacy policy here...'
+};
+
+// --- Methods (Replaces methods()) ---
+const loadPolicy = () => {
+  const savedPolicy = sessionStorage.getItem('privacyPolicy');
+  if (savedPolicy) {
+    policyContent.value = savedPolicy;
+    hasPolicy.value = true;
   }
-}
+};
+
+const openAddDialog = () => {
+  isEditing.value = false;
+  // Load the current policy into the editor before clearing it for a better UX
+  const currentPolicy = sessionStorage.getItem('privacyPolicy') || '';
+  policyContent.value = ''; // Clear for new entry
+  showDialog.value = true;
+};
+
+const openEditDialog = () => {
+  isEditing.value = true;
+  // Ensure the latest version is loaded for editing
+  policyContent.value = sessionStorage.getItem('privacyPolicy') || '';
+  showDialog.value = true;
+};
+
+const closeDialog = () => {
+  showDialog.value = false;
+  // On close, reload the original policy content if not saving
+  loadPolicy();
+};
+
+const savePolicy = async () => {
+  try {
+    isSaving.value = true;
+    sessionStorage.setItem('privacyPolicy', policyContent.value);
+    
+    // Simulate API call
+    await new Promise(resolve => setTimeout(resolve, 1000));
+    
+    showDialog.value = false; // Close dialog before showing toast
+    hasPolicy.value = !!policyContent.value;
+    toast.success(`Privacy Policy ${isEditing.value ? 'updated' : 'added'} successfully`);
+  } catch (error) {
+    console.error('Error saving policy:', error);
+    toast.error(`Failed to ${isEditing.value ? 'update' : 'add'} policy. Please try again.`);
+  } finally {
+    isSaving.value = false;
+  }
+};
+
+// --- Lifecycle Hook (Replaces created()) ---
+loadPolicy();
 </script>
 
 <style>

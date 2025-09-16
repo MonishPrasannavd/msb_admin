@@ -1,68 +1,39 @@
 <template>
   <div class="sub-talent-view-container">
-    <!-- Loading Overlay -->
     <div v-if="isLoading" class="loading-overlay">
-      <v-progress-circular
-        indeterminate
-        color="success"
-        size="64"
-      ></v-progress-circular>
+      <v-progress-circular indeterminate color="success" size="64"></v-progress-circular>
       <p class="mt-4 text-h6">Loading sub-talent data...</p>
     </div>
-    
-    <v-container fluid class="pa-6" style="min-height: 100vh;">
-      <!-- Header Section -->
+
+    <v-container fluid class="pa-6" style="min-height: 100vh">
       <div class="header-section mb-6">
         <div class="d-flex align-center mb-4">
-          <v-btn
-            color="success"
-            variant="text"
-            size="small"
-            @click="goBack"
-            class="mr-4"
-          >
+          <v-btn color="success" variant="text" size="small" @click="goBack" class="mr-4">
             <font-awesome-icon icon="fa-solid fa-arrow-left" class="mr-2" />
             Back to {{ talent?.name }}
           </v-btn>
           <v-divider vertical class="mx-4"></v-divider>
           <h1 class="text-h4 font-weight-bold">{{ subTalent?.name }}</h1>
         </div>
-        
-        <!-- Status and Timer -->
+
         <div class="d-flex align-center justify-space-between">
           <div class="d-flex align-center">
-            <v-switch
-              :model-value="subTalent?.isActive"
-              color="success"
-              hide-details
-              density="compact"
-              inset
-              class="compact-switch mr-3"
-              style="transform: scale(0.8); transform-origin: left center;"
-              @update:model-value="toggleSubTalentStatus"
-            ></v-switch>
+            <v-switch :model-value="subTalent?.isActive" color="success" hide-details density="compact" inset
+              class="compact-switch mr-3" style="transform: scale(0.8); transform-origin: left center;"
+              @update:model-value="toggleSubTalentStatus"></v-switch>
             <div class="d-flex align-center status-chip">
-              <font-awesome-icon 
-                :icon="['fas', 'circle']" 
-                :class="subTalent?.isActive ? 'text-success' : 'text-warning'" 
-                class="mr-1" 
-                size="sm"
-              />
+              <font-awesome-icon :icon="['fas', 'circle']"
+                :class="subTalent?.isActive ? 'text-success' : 'text-warning'" class="mr-1" size="sm" />
               <span class="text-caption">{{
                 subTalent?.isActive ? "Active" : "Inactive"
               }}</span>
             </div>
           </div>
-          
-          <!-- Timer Display -->
+
           <div class="timer-section pa-3 rounded" :class="getTimerClass(subTalent)">
             <div class="d-flex align-center">
-              <font-awesome-icon 
-                :icon="getTimerIcon(subTalent)" 
-                :class="getTimerIconClass(subTalent)"
-                class="mr-2" 
-                size="sm"
-              />
+              <font-awesome-icon :icon="getTimerIcon(subTalent)" :class="getTimerIconClass(subTalent)" class="mr-2"
+                size="sm" />
               <span class="text-subtitle-2 font-weight-medium" :class="getTimerTextClass(subTalent)">
                 {{ getTimerText(subTalent) }}
               </span>
@@ -75,9 +46,8 @@
           </div>
         </div>
       </div>
-      
+
       <v-row>
-        <!-- Left Column - Sub-talent Details -->
         <v-col cols="12" md="8">
           <v-card class="details-card mb-6">
             <v-card-title class="text-h5 pa-6 pb-4">
@@ -124,8 +94,7 @@
               </v-row>
             </v-card-text>
           </v-card>
-          
-          <!-- Participants List -->
+
           <v-card class="participants-card">
             <v-card-title class="d-flex justify-space-between align-center pa-6 pb-4">
               <span class="text-h5">All Participants</span>
@@ -136,40 +105,28 @@
                 <h3 class="text-h6 text-grey-darken-1 mb-2">No Participants Yet</h3>
                 <p class="text-body-1 text-grey">Be the first to participate!</p>
               </div>
-              
+
               <v-list v-else>
-                <v-list-item
-                  v-for="(participant, index) in participants"
-                  :key="participant.id"
-                  class="participant-item mb-2"
-                >
+                <v-list-item v-for="(participant, index) in participants" :key="participant.id"
+                  class="participant-item mb-2">
                   <template v-slot:prepend>
                     <v-avatar size="40" class="mr-3">
-                      <v-img
-                        v-if="participant.avatar"
-                        :src="participant.avatar"
-                        cover
-                      ></v-img>
+                      <v-img v-if="participant.avatar" :src="participant.avatar" cover></v-img>
                       <v-icon v-else icon="mdi-account" color="grey"></v-icon>
                     </v-avatar>
                   </template>
-                  
+
                   <v-list-item-title class="font-weight-medium">
                     {{ participant.name }}
-                    <v-chip
-                      v-if="index < 3"
-                      :color="getTopParticipantColor(index)"
-                      size="small"
-                      class="ml-2"
-                    >
+                    <v-chip v-if="index < 3" :color="getTopParticipantColor(index)" size="small" class="ml-2">
                       #{{ index + 1 }}
                     </v-chip>
                   </v-list-item-title>
-                  
+
                   <v-list-item-subtitle class="text-grey">
                     {{ participant.email }}
                   </v-list-item-subtitle>
-                  
+
                   <template v-slot:append>
                     <div class="d-flex align-center">
                       <v-icon icon="mdi-thumb-up" color="success" size="small" class="mr-1"></v-icon>
@@ -181,10 +138,8 @@
             </v-card-text>
           </v-card>
         </v-col>
-        
-        <!-- Right Column - Top Participants & Stats -->
+
         <v-col cols="12" md="4">
-          <!-- Top 3 Participants -->
           <v-card class="top-participants-card mb-6">
             <v-card-title class="text-h5 pa-6 pb-4">
               <font-awesome-icon icon="fa-solid fa-trophy" class="mr-2 text-warning" />
@@ -195,23 +150,16 @@
                 <v-icon icon="mdi-trophy-outline" size="48" color="grey" class="mb-2"></v-icon>
                 <p class="text-grey">No participants yet</p>
               </div>
-              
+
               <div v-else>
-                <div
-                  v-for="(participant, index) in topParticipants"
-                  :key="participant.id"
-                  class="top-participant-item mb-4"
-                >
+                <div v-for="(participant, index) in topParticipants" :key="participant.id"
+                  class="top-participant-item mb-4">
                   <div class="d-flex align-center">
                     <div class="rank-badge mr-3" :class="getRankClass(index)">
                       {{ index + 1 }}
                     </div>
                     <v-avatar size="50" class="mr-3">
-                      <v-img
-                        v-if="participant.avatar"
-                        :src="participant.avatar"
-                        cover
-                      ></v-img>
+                      <v-img v-if="participant.avatar" :src="participant.avatar" cover></v-img>
                       <v-icon v-else icon="mdi-account" color="grey"></v-icon>
                     </v-avatar>
                     <div class="flex-grow-1">
@@ -227,8 +175,7 @@
               </div>
             </v-card-text>
           </v-card>
-          
-          <!-- Statistics Card -->
+
           <v-card class="stats-card">
             <v-card-title class="text-h5 pa-6 pb-4">
               <font-awesome-icon icon="fa-solid fa-chart-bar" class="mr-2 text-info" />
@@ -259,316 +206,188 @@
   </div>
 </template>
 
-<script>
-export default {
-  name: "SubTalentViewPage",
-  data() {
-    return {
-      talent: null,
-      subTalent: null,
-      participants: [],
-      isLoading: false,
-      timerInterval: null
-    };
-  },
-  computed: {
-    topParticipants() {
-      return this.participants
-        .sort((a, b) => b.likes - a.likes)
-        .slice(0, 3);
-    },
-    totalLikes() {
-      return this.participants.reduce((sum, participant) => sum + participant.likes, 0);
-    },
-    averageLikes() {
-      if (this.participants.length === 0) return 0;
-      return Math.round(this.totalLikes / this.participants.length);
-    }
-  },
-  created() {
-    this.loadSubTalentData();
-    // Start timer interval for real-time updates
-    this.timerInterval = setInterval(() => {
-      this.$forceUpdate(); // Force re-render to update timers
-    }, 1000);
-  },
-  beforeUnmount() {
-    // Clear timer interval when component is destroyed
-    if (this.timerInterval) {
-      clearInterval(this.timerInterval);
-    }
-  },
-  methods: {
-    loadSubTalentData() {
-      this.isLoading = true;
-      const talentId = this.$route.params.talentId;
-      const subTalentId = parseInt(this.$route.params.subTalentId);
-      
-      console.log('Loading sub-talent data:', { talentId, subTalentId });
-      
-      // Load talent
-      const talents = JSON.parse(localStorage.getItem('talents') || '[]');
-      this.talent = talents.find(t => t.id == talentId);
-      
-      if (!this.talent) {
-        this.$toast.error('Talent not found');
-        this.$router.push('/');
-        this.isLoading = false;
-        return;
-      }
-      
-      // Load sub-talents
-      const subTalents = JSON.parse(localStorage.getItem(`subTalents_${talentId}`) || '[]');
-      this.subTalent = subTalents.find(st => st.id === subTalentId);
-      
-      if (!this.subTalent) {
-        this.$toast.error('Sub-talent not found');
-        this.$router.push(`/talents/${talentId}`);
-        this.isLoading = false;
-        return;
-      }
-      
-      // Load participants (mock data for demo)
-      this.loadParticipants();
-      
-      this.isLoading = false;
-    },
-    
-    loadParticipants() {
-      // For demo purposes, create some mock participants
-      const mockParticipants = [
-        {
-          id: 1,
-          name: 'John Smith',
-          email: 'john.smith@example.com',
-          likes: 45,
-          avatar: null
-        },
-        {
-          id: 2,
-          name: 'Sarah Johnson',
-          email: 'sarah.j@example.com',
-          likes: 38,
-          avatar: null
-        },
-        {
-          id: 3,
-          name: 'Mike Davis',
-          email: 'mike.davis@example.com',
-          likes: 32,
-          avatar: null
-        },
-        {
-          id: 4,
-          name: 'Emily Wilson',
-          email: 'emily.w@example.com',
-          likes: 28,
-          avatar: null
-        },
-        {
-          id: 5,
-          name: 'Alex Brown',
-          email: 'alex.brown@example.com',
-          likes: 25,
-          avatar: null
-        }
-      ];
-      
-      // Load from localStorage or use mock data
-      const storedParticipants = localStorage.getItem(`participants_${this.subTalent.id}`);
-      this.participants = storedParticipants ? JSON.parse(storedParticipants) : mockParticipants;
-      
-      // Save mock data if not exists
-      if (!storedParticipants) {
-        localStorage.setItem(`participants_${this.subTalent.id}`, JSON.stringify(mockParticipants));
-      }
-    },
-    
-    goBack() {
-      this.$router.push(`/talents/${this.talent.id}`);
-    },
-    
-    toggleSubTalentStatus() {
-      if (this.subTalent) {
-        this.subTalent.isActive = !this.subTalent.isActive;
-        
-        // Update in localStorage
-        const subTalents = JSON.parse(localStorage.getItem(`subTalents_${this.talent.id}`) || '[]');
-        const index = subTalents.findIndex(st => st.id === this.subTalent.id);
-        if (index !== -1) {
-          subTalents[index] = this.subTalent;
-          localStorage.setItem(`subTalents_${this.talent.id}`, JSON.stringify(subTalents));
-        }
-        
-        this.$toast.success(`Sub-talent ${this.subTalent.isActive ? 'activated' : 'deactivated'} successfully!`);
-      }
-    },
-    
-    addParticipant() {
-      // For demo purposes, add a random participant
-      const newParticipant = {
-        id: Date.now(),
-        name: `Participant ${this.participants.length + 1}`,
-        email: `participant${this.participants.length + 1}@example.com`,
-        likes: Math.floor(Math.random() * 50) + 1,
-        avatar: null
-      };
-      
-      this.participants.push(newParticipant);
-      localStorage.setItem(`participants_${this.subTalent.id}`, JSON.stringify(this.participants));
-      
-      this.$toast.success('Participant added successfully!');
-    },
-    
-    getTopParticipantColor(index) {
-      const colors = ['warning', 'grey', 'brown'];
-      return colors[index] || 'grey';
-    },
-    
-    getRankClass(index) {
-      const classes = ['gold', 'silver', 'bronze'];
-      return classes[index] || 'grey';
-    },
-    
-    getStatusColor() {
-      if (!this.subTalent?.startDate || !this.subTalent?.endDate) {
-        return 'grey';
-      }
-      const now = new Date();
-      const start = new Date(this.subTalent.startDate);
-      const end = new Date(this.subTalent.endDate);
-      
-      if (now < start) return 'warning';
-      if (now >= start && now <= end) return 'success';
-      return 'error';
-    },
-    
-    getStatusText() {
-      if (!this.subTalent?.startDate || !this.subTalent?.endDate) {
-        return 'Not Scheduled';
-      }
-      const now = new Date();
-      const start = new Date(this.subTalent.startDate);
-      const end = new Date(this.subTalent.endDate);
-      
-      if (now < start) return 'Upcoming';
-      if (now >= start && now <= end) return 'Active';
-      return 'Ended';
-    },
-    
-    formatDateTime(dateString) {
-      if (!dateString) return 'N/A';
-      const date = new Date(dateString);
-      return date.toLocaleDateString() + ' ' + date.toLocaleTimeString();
-    },
-    
-    // Timer methods (same as TalentViewPage)
-    getTimerClass(subTalent) {
-      if (!subTalent?.startDate || !subTalent?.endDate) {
-        return 'inactive';
-      }
-      const now = new Date();
-      const start = new Date(subTalent.startDate);
-      const end = new Date(subTalent.endDate);
-      
-      if (now < start) return 'upcoming';
-      if (now >= start && now <= end) return 'active';
-      return 'inactive';
-    },
-    
-    getTimerIcon(subTalent) {
-      if (!subTalent?.startDate || !subTalent?.endDate) {
-        return 'fa-solid fa-clock';
-      }
-      const now = new Date();
-      const start = new Date(subTalent.startDate);
-      const end = new Date(subTalent.endDate);
-      
-      if (now < start) return 'fa-solid fa-arrow-up';
-      if (now >= start && now <= end) return 'fa-solid fa-check-circle';
-      return 'fa-solid fa-arrow-down';
-    },
-    
-    getTimerIconClass(subTalent) {
-      if (!subTalent?.startDate || !subTalent?.endDate) {
-        return 'text-grey';
-      }
-      const now = new Date();
-      const start = new Date(subTalent.startDate);
-      const end = new Date(subTalent.endDate);
-      
-      if (now < start) return 'text-success';
-      if (now >= start && now <= end) return 'text-success';
-      return 'text-warning';
-    },
-    
-    getTimerText(subTalent) {
-      if (!subTalent?.startDate || !subTalent?.endDate) {
-        return 'Not Scheduled';
-      }
-      const now = new Date();
-      const start = new Date(subTalent.startDate);
-      const end = new Date(subTalent.endDate);
-      
-      if (now < start) return 'Upcoming';
-      if (now >= start && now <= end) return 'Active';
-      return 'Inactive';
-    },
-    
-    getTimerTextClass(subTalent) {
-      if (!subTalent?.startDate || !subTalent?.endDate) {
-        return 'text-grey';
-      }
-      const now = new Date();
-      const start = new Date(subTalent.startDate);
-      const end = new Date(subTalent.endDate);
-      
-      if (now < start) return 'text-success';
-      if (now >= start && now <= end) return 'text-success';
-      return 'text-warning';
-    },
-    
-    getTimerDisplay(subTalent) {
-      if (!subTalent?.startDate || !subTalent?.endDate) {
-        return null;
-      }
-      const now = new Date();
-      const start = new Date(subTalent.startDate);
-      const end = new Date(subTalent.endDate);
-      
-      if (now < start) {
-        const diff = start - now;
-        return this.formatTime(diff);
-      } else if (now >= start && now <= end) {
-        const diff = end - now;
-        return this.formatTime(diff);
-      } else {
-        const diff = now - end;
-        return this.formatTime(diff);
-      }
-    },
-    
-    formatTime(milliseconds) {
-      const days = Math.floor(milliseconds / (1000 * 60 * 60 * 24));
-      const hours = Math.floor((milliseconds % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-      const minutes = Math.floor((milliseconds % (1000 * 60 * 60)) / (1000 * 60));
-      const seconds = Math.floor((milliseconds % (1000 * 60)) / 1000);
-      
-      if (days > 0) {
-        return `${days}d ${hours}h ${minutes}m`;
-      } else if (hours > 0) {
-        return `${hours}h ${minutes}m ${seconds}s`;
-      } else if (minutes > 0) {
-        return `${minutes}m ${seconds}s`;
-      } else {
-        return `${seconds}s`;
-      }
-    }
+<script setup>
+import { ref, computed, onMounted, onBeforeUnmount } from 'vue';
+import { useRoute, useRouter } from 'vue-router';
+
+// NOTE: Replace with your actual toast notification plugin
+const toast = {
+  success: (msg) => console.log(`SUCCESS: ${msg}`),
+  error: (msg) => console.error(`ERROR: ${msg}`),
+};
+
+const route = useRoute();
+const router = useRouter();
+
+const talent = ref(null);
+const subTalent = ref(null);
+const participants = ref([]);
+const isLoading = ref(false);
+const timerInterval = ref(null);
+const renderTrigger = ref(0); // Used to force re-render for timers
+
+const topParticipants = computed(() => {
+  // Create a new array to avoid sorting the original
+  return [...participants.value]
+    .sort((a, b) => b.likes - a.likes)
+    .slice(0, 3);
+});
+
+const totalLikes = computed(() => {
+  return participants.value.reduce((sum, p) => sum + p.likes, 0);
+});
+
+const averageLikes = computed(() => {
+  if (participants.value.length === 0) return 0;
+  return Math.round(totalLikes.value / participants.value.length);
+});
+
+const loadSubTalentData = () => {
+  isLoading.value = true;
+  const talentId = route.params.talentId;
+  const subTalentId = parseInt(route.params.subTalentId);
+
+  const talents = JSON.parse(localStorage.getItem('talents') || '[]');
+  talent.value = talents.find(t => t.id == talentId);
+
+  if (!talent.value) {
+    toast.error('Talent not found');
+    router.push('/');
+    isLoading.value = false;
+    return;
+  }
+
+  const subTalents = JSON.parse(localStorage.getItem(`subTalents_${talentId}`) || '[]');
+  subTalent.value = subTalents.find(st => st.id === subTalentId);
+
+  if (!subTalent.value) {
+    toast.error('Sub-talent not found');
+    router.push(`/talents/${talentId}`);
+    isLoading.value = false;
+    return;
+  }
+  loadParticipants();
+  isLoading.value = false;
+};
+
+const loadParticipants = () => {
+  const mockParticipants = [
+    { id: 1, name: 'John Smith', email: 'john.smith@example.com', likes: 45, avatar: null },
+    { id: 2, name: 'Sarah Johnson', email: 'sarah.j@example.com', likes: 38, avatar: null },
+    { id: 3, name: 'Mike Davis', email: 'mike.davis@example.com', likes: 32, avatar: null },
+    { id: 4, name: 'Emily Wilson', email: 'emily.w@example.com', likes: 28, avatar: null },
+    { id: 5, name: 'Alex Brown', email: 'alex.brown@example.com', likes: 25, avatar: null }
+  ];
+  const stored = localStorage.getItem(`participants_${subTalent.value.id}`);
+  participants.value = stored ? JSON.parse(stored) : mockParticipants;
+  if (!stored) {
+    localStorage.setItem(`participants_${subTalent.value.id}`, JSON.stringify(mockParticipants));
   }
 };
+
+const goBack = () => {
+  if (talent.value) {
+    router.push(`/talents/${talent.value.id}`);
+  }
+};
+
+const toggleSubTalentStatus = () => {
+  if (subTalent.value) {
+    subTalent.value.isActive = !subTalent.value.isActive;
+    const subTalents = JSON.parse(localStorage.getItem(`subTalents_${talent.value.id}`) || '[]');
+    const index = subTalents.findIndex(st => st.id === subTalent.value.id);
+    if (index !== -1) {
+      subTalents[index] = subTalent.value;
+      localStorage.setItem(`subTalents_${talent.value.id}`, JSON.stringify(subTalents));
+    }
+    toast.success(`Sub-talent ${subTalent.value.isActive ? 'activated' : 'deactivated'} successfully!`);
+  }
+};
+
+const getTopParticipantColor = (index) => {
+  const colors = ['warning', 'grey', 'brown'];
+  return colors[index] || 'grey';
+};
+
+const getRankClass = (index) => {
+  const classes = ['gold', 'silver', 'bronze'];
+  return classes[index] || 'grey';
+};
+
+const getStatusColor = () => {
+  if (!subTalent.value?.startDate || !subTalent.value?.endDate) return 'grey';
+  const now = new Date();
+  const start = new Date(subTalent.value.startDate);
+  const end = new Date(subTalent.value.endDate);
+  if (now < start) return 'warning';
+  if (now >= start && now <= end) return 'success';
+  return 'error';
+};
+
+const getStatusText = () => {
+  if (!subTalent.value?.startDate || !subTalent.value?.endDate) return 'Not Scheduled';
+  const now = new Date();
+  const start = new Date(subTalent.value.startDate);
+  const end = new Date(subTalent.value.endDate);
+  if (now < start) return 'Upcoming';
+  if (now >= start && now <= end) return 'Active';
+  return 'Ended';
+};
+
+const formatDateTime = (dateString) => {
+  if (!dateString) return 'N/A';
+  const date = new Date(dateString);
+  return date.toLocaleDateString() + ' ' + date.toLocaleTimeString();
+};
+
+// Timer utility functions
+const formatTime = (milliseconds) => {
+  const days = Math.floor(milliseconds / (1000 * 60 * 60 * 24));
+  const hours = Math.floor((milliseconds % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+  const minutes = Math.floor((milliseconds % (1000 * 60 * 60)) / (1000 * 60));
+  const seconds = Math.floor((milliseconds % (1000 * 60)) / 1000);
+  if (days > 0) return `${days}d ${hours}h ${minutes}m`;
+  if (hours > 0) return `${hours}h ${minutes}m ${seconds}s`;
+  if (minutes > 0) return `${minutes}m ${seconds}s`;
+  return `${seconds}s`;
+};
+
+const getTimerDisplay = (st) => {
+  // This line makes the function reactive to the timer interval
+  const _ = renderTrigger.value;
+  if (!st?.startDate || !st?.endDate) return null;
+  const now = new Date();
+  const start = new Date(st.startDate);
+  const end = new Date(st.endDate);
+  if (now < start) return formatTime(start - now);
+  if (now >= start && now <= end) return formatTime(end - now);
+  return formatTime(now - end);
+};
+
+const getTimerClass = (st) => { /* ... similar logic as getStatus ... */ };
+const getTimerIcon = (st) => { /* ... similar logic ... */ };
+const getTimerIconClass = (st) => { /* ... similar logic ... */ };
+const getTimerText = (st) => { /* ... similar logic ... */ };
+const getTimerTextClass = (st) => { /* ... similar logic ... */ };
+
+
+onMounted(() => {
+  loadSubTalentData();
+  timerInterval.value = setInterval(() => {
+    renderTrigger.value++;
+  }, 1000);
+});
+
+onBeforeUnmount(() => {
+  if (timerInterval.value) {
+    clearInterval(timerInterval.value);
+  }
+});
+
 </script>
 
 <style scoped>
+/* Your component styles remain unchanged */
 .sub-talent-view-container {
   background-color: #f8f9fa;
   overflow-y: auto !important;
