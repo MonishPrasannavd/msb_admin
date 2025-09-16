@@ -28,15 +28,15 @@
           <div class="talent-avatar-container text-center mb-4">
             <v-avatar size="120" class="mb-3">
               <v-img
-                v-if="talent?.icon"
-                :src="talent.icon"
-                :alt="talent?.name"
+                v-if="talentIconPath"
+                :src="talentIconPath"
+                :alt="talentIconPath"
                 cover
               ></v-img>
               <v-icon v-else icon="mdi-account" size="60" color="grey"></v-icon>
             </v-avatar>
             <h3 class="text-h6">{{ talent?.name }}</h3>
-            <p class="text-caption text-grey">Added: {{ talent?.addedDate }}</p>
+            <!-- <p class="text-caption text-grey">Added: {{ talent?.addedDate }}</p> -->
           </div>
           
           <v-divider class="mb-4"></v-divider>
@@ -453,6 +453,17 @@ const router = useRouter();
 
 // REACTIVE STATE
 const talent = ref(null);
+const talentIconPath = computed(() => {
+  if (talent.value?.icon) {
+    // 1. Get the base URL from the environment variables
+    const baseUrl = import.meta.env.VITE_API_URL;
+
+    // 2. Combine it with the static path and the filename
+    //    IMPORTANT: Adjust '/static/icons/' to match your backend's actual path!
+    return `${baseUrl}/static/media/category_images/${talent.value.icon}`;
+  }
+  return null;
+});
 const subTalents = ref([]);
 const search = ref("");
 const showSubTalentDialog = ref(false);
