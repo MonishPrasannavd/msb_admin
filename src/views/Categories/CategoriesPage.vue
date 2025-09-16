@@ -1,28 +1,74 @@
 <template>
-  <div class="pa-5">
-    <h2 class="mb-4">Categories</h2>
+  <div class="px-5 py-2">
+    <h2 class="mb-4">Talents</h2>
+    <v-row no-gutters justify="space-between">
+      <v-col cols="3">
+        <v-btn class="mb-4 add-category" @click="openDialog()">
+          <i class="fa-solid fa-plus me-2"></i>
+          Add Category
+        </v-btn>
+      </v-col>
+      <v-col cols="4">
+        <v-text-field
+          v-model="search"
+          label="Search by Talent Name .."
+          variant="solo"
+          rounded="lg"
+          bg-color="white"
+          density="compact"
+          class="mb-4 input-search"
+          clearable
+          @input="loadCategories"
+        >
+          <template v-slot:prepend-inner>
+            <font-awesome-icon icon="fa-solid fa-search" class="search-icon" />
+          </template>
+        </v-text-field>
+      </v-col>
+    </v-row>
 
     <!-- Search Filter -->
-    <v-text-field v-model="search" label="Search by name" class="mb-4" clearable @input="loadCategories" />
 
     <!-- Add Category Button -->
-    <v-btn color="primary" class="mb-4" @click="openDialog()">
-      <v-icon left>mdi-plus</v-icon>
-      Add Category
-    </v-btn>
 
-    <v-divider class="my-6"></v-divider>
+    <!-- <v-divider class="my-6"></v-divider> -->
 
     <!-- Category List -->
-    <v-data-table :items="categories" :headers="headers" :loading="categoryStore.loading"
-      :items-per-page="pagination?.per_page || 10" :page="pagination?.page || 1"
-      :server-items-length="pagination?.total || 0" @update:page="loadCategories">
-      <template #item.actions="{ item }">
-        <v-btn icon @click="openDialog(item)">
-          <v-icon>mdi-pencil</v-icon>
+    <v-data-table
+      :items="categories"
+      :headers="headers"
+      :loading="categoryStore.loading"
+      :items-per-page="pagination?.per_page || 10"
+      :page="pagination?.page || 1"
+      :server-items-length="pagination?.total || 0"
+      @update:page="loadCategories"
+      height="456px"
+      class="rounded-lg"
+      fixed-header
+    >
+      <template #item.actions="{ item }" class="d-flex flex-row ga-4">
+        <v-btn
+          @click="openDialog(item)"
+          icon="mdi-plus"
+          density="comfortable"
+          class="me-4 edit-btn"
+        >
+          <i class="fa-solid fa-pen-to-square"></i>
         </v-btn>
-        <v-btn icon color="red" @click="removeCategory(item.id)">
-          <v-icon>mdi-delete</v-icon>
+        <v-btn 
+          @click="removeCategory(item.id)"  
+          icon="mdi-plus"
+          density="comfortable"
+          class="me-4 delete-btn">
+          <i class="fa-solid fa-trash"></i>
+        </v-btn>
+        <v-btn
+          :to="{ name: 'TalentView', params: { id: item.id } }"
+          icon="mdi-plus"
+          density="comfortable"
+          class="me-4 view-btn"
+        >
+          <i class="bi bi-eye-fill"></i>
         </v-btn>
       </template>
       <template #item.icon="{ item }">
@@ -30,16 +76,26 @@
       </template>
 
       <template #item.name="{ item }">
-        <v-btn :to="{ name : 'TalentView', params:{id:item.id}}" variant="flat" color="primary" size="small">
+        <p  class="ps-3 text-subtitle-1">
           {{ item.name }}
-        </v-btn>
+        </p>
       </template>
 
       <template #item.is_future="{ item }">
-        <v-chip variant="flat" color="red" size="small" v-if="item.is_future == 0">
+        <v-chip
+          variant="flat"
+          color="red"
+          size="small"
+          v-if="item.is_future == 0"
+        >
           NO
         </v-chip>
-        <v-chip variant="flat" color="green" size="small" v-if="item.is_future == 1">
+        <v-chip
+          variant="flat"
+          color="green"
+          size="small"
+          v-if="item.is_future == 1"
+        >
           YES
         </v-chip>
       </template>
@@ -49,7 +105,9 @@
     <v-dialog v-model="dialog" max-width="480">
       <v-card>
         <v-card-title class="justify-space-between align-center">
-          <span class="text-h6">{{ form.id ? "Edit Category" : "Add Category" }}</span>
+          <span class="text-h6">{{
+            form.id ? "Edit Category" : "Add Category"
+          }}</span>
           <v-btn icon @click="closeDialog" variant="text">
             <v-icon>mdi-close</v-icon>
           </v-btn>
@@ -58,11 +116,15 @@
         <v-divider></v-divider>
 
         <v-card-text>
-          <v-form ref="formRef" @submit.prevent="handleSubmit" class="d-flex flex-column gap-4">
+          <v-form
+            ref="formRef"
+            @submit.prevent="handleSubmit"
+            class="d-flex flex-column gap-4"
+          >
             <v-text-field
               v-model="form.name"
               label="Category Name"
-              :rules="[v => !!v || 'Name is required']"
+              :rules="[(v) => !!v || 'Name is required']"
               required
               prepend-inner-icon="mdi-tag"
             ></v-text-field>
@@ -88,7 +150,7 @@
                 :items="[
                   { title: 'Type 0', value: 0 },
                   { title: 'Type 1', value: 1 },
-                  { title: 'Type 2', value: 2 }
+                  { title: 'Type 2', value: 2 },
                 ]"
                 label="Type"
                 class="flex-grow-1"
@@ -102,8 +164,15 @@
 
         <v-card-actions class="justify-end">
           <v-btn variant="text" @click="closeDialog">Cancel</v-btn>
-          <v-btn color="primary" :loading="loading" @click="handleSubmit" variant="flat">
-            <v-icon left>{{ form.id ? "mdi-content-save" : "mdi-plus" }}</v-icon>
+          <v-btn
+            color="primary"
+            :loading="loading"
+            @click="handleSubmit"
+            variant="flat"
+          >
+            <v-icon left>{{
+              form.id ? "mdi-content-save" : "mdi-plus"
+            }}</v-icon>
             {{ form.id ? "Update" : "Add" }}
           </v-btn>
         </v-card-actions>
@@ -181,3 +250,75 @@ const resetForm = () => {
   form.value = { id: null, name: "", icon: null, is_future: false, type: 0 };
 };
 </script>
+
+<style>
+.add-category {
+  background-color: #4caf50;
+  color: #fff;
+  border: 1px solid #4caf50;
+  transition: all 0.8s ease;
+}
+.input-search {
+  :deep(.v-field__input::placeholder) {
+    color: #4caf50 !important;
+    opacity: 1;
+  }
+
+  :deep(.v-field) {
+    border-radius: 15px !important;
+    transition: all 0.3s ease;
+    background: #f8f9fa !important;
+  }
+
+  :deep(.v-field:hover) {
+    box-shadow: 0 4px 12px rgba(76, 175, 80, 0.1);
+  }
+}
+.search-icon {
+  color: #4caf50 !important;
+}
+.add-category:hover {
+  background-color: #fff !important;
+  color: #4caf50;
+  border: 1px solid #4caf50;
+  box-shadow: none !important;
+}
+table tbody tr td {
+  padding: 7px !important;
+}
+table thead tr th{
+  font-size: 1rem !important;
+  font-weight: 500;
+  color: #4caf50; 
+}
+.view-btn{
+ background-color: #4caf50;
+ color: #fff;
+ border: 1px solid #4caf50;
+ transition: all 0.8s ease;
+}
+.view-btn:hover{
+  background-color: #fff;
+  color:#4caf50;
+
+}
+.delete-btn{
+ background-color: #dc3545;
+ color: #fff;
+ border: 1px solid #dc3545;
+ transition: all 0.8s ease;
+}
+.delete-btn:hover{
+  background-color: #fff;
+  color:#dc3545;
+}
+.edit-btn{
+  background-color: #0d6efd;
+ color: #fff;
+ border: 1px solid #0d6efd;
+ transition: all 0.8s ease;
+}
+.edit-btn:hover{
+  color: #0d6efd;
+}
+</style>

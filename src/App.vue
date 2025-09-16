@@ -76,7 +76,7 @@
 
           <v-list-item
             prepend-icon="mdi-book"
-            title="Categories"
+            title="Talents"
             :to="{name: 'Categories'}"
             class="rounded-lg mb-2"
             active-color="success"
@@ -108,72 +108,13 @@
 
 
           <!-- Talents Section -->
-          <div class="talents-section mb-4">
-            <div class="d-flex align-center mb-3">
-              <font-awesome-icon icon="fa-solid fa-users" class="mr-2 text-success" />
-              <span class="text-subtitle-2 font-weight-medium">Talents</span>
-            </div>
-            
-            <!-- Search Field -->
-            <v-text-field
-              v-model="talentSearch"
-              placeholder="Search talents..."
-              variant="outlined"
-              density="compact"
-              hide-details
-              class="mb-3 talent-search-field"
-              prepend-inner-icon="mdi-magnify"
-              clearable
-            ></v-text-field>
-            
-            <!-- Talents List -->
-            <div class="talents-list">
-              <div
-                v-for="talent in filteredTalents"
-                :key="talent.id"
-                class="talent-item d-flex align-center justify-space-between pa-2 mb-2 rounded-lg"
-                @click="viewTalent(talent)"
-              >
-                <div class="d-flex align-center">
-                  <v-avatar size="24" class="mr-2">
-                    <v-img
-                      v-if="talent.image"
-                      :src="talent.image"
-                      :alt="talent.name"
-                      cover
-                    ></v-img>
-                    <v-icon v-else icon="mdi-account" color="grey" size="16"></v-icon>
-                  </v-avatar>
-                  
-                  <span class="talent-name">{{ talent.name }}</span>
-                  
-                  <v-spacer></v-spacer>
-                  
-                  <v-btn
-                    icon="mdi-delete"
-                    size="x-small"
-                    variant="text"
-                    color="error"
-                    @click.stop="removeTalent(talent.id)"
-                    class="delete-talent-btn"
-                  ></v-btn>
-                </div>
-              </div>
-              
-              <div
-                v-if="talents.length === 0"
-                class="talent-item pa-2 mb-1 rounded-lg text-center"
-              >
-                <span class="text-caption text-grey">No talents added yet</span>
-              </div>
-            </div>
-          </div>
+         
         </v-list>
 
         <!-- Add Talent Button and Legal Links at Bottom -->
         <template v-slot:append>
           <div class="pa-2">
-            <v-btn
+            <!-- <v-btn
               block
               color="success"
               class="add-talent-btn mb-3"
@@ -181,7 +122,7 @@
             >
               <font-awesome-icon icon="fa-solid fa-plus" class="mr-2" />
               Add Talent
-            </v-btn>
+            </v-btn> -->
             
             <v-divider class="mb-3"></v-divider>
             
