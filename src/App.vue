@@ -157,7 +157,7 @@
         </template>
       </v-navigation-drawer>
 
-      <v-main class="bg-grey-lighten-4">
+      <v-main>
         <router-view></router-view>
       </v-main>
     </template>
@@ -406,9 +406,9 @@ function viewTalent(talent) {
 .v-application {
   font-family: "Poppins", sans-serif !important;
 }
-.v-application__wrap {
+/* .v-application__wrap {
   background-color: #f8f9fa !important;
-}
+} */
 .v-app-bar.v-toolbar{
 /* background: #f8f9fa !important; */
 box-shadow: rgba(0, 0, 0, 0.16) 0px 1px 4px;

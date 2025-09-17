@@ -42,8 +42,7 @@
       :page="pagination?.page || 1"
       :server-items-length="pagination?.total || 0"
       @update:page="loadCategories"
-      height="456px"
-      class="rounded-lg"
+      class="rounded-lg responsive-table"
       fixed-header
     >
       <template #item.actions="{ item }" class="d-flex flex-row ga-4">
@@ -252,6 +251,9 @@ const resetForm = () => {
 </script>
 
 <style>
+.auth-layout{
+  background: transparent !important;
+}
 .add-category {
   background-color: #4caf50;
   color: #fff;
@@ -320,5 +322,9 @@ table thead tr th{
 }
 .edit-btn:hover{
   color: #0d6efd;
+}
+.responsive-table {
+  height: calc(100vh - 220px); /* 64px = app-bar height */
+
 }
 </style>
