@@ -454,15 +454,9 @@ const router = useRouter();
 // REACTIVE STATE
 const talent = ref(null);
 const talentIconPath = computed(() => {
-  if (talent.value?.icon) {
-    // 1. Get the base URL from the environment variables
-    const baseUrl = import.meta.env.VITE_API_URL;
-
-    // 2. Combine it with the static path and the filename
-    //    IMPORTANT: Adjust '/static/icons/' to match your backend's actual path!
-    return `${baseUrl}/static/media/category_images/${talent.value.icon}`;
-  }
-  return null;
+  // Simply return the full URL provided by the backend.
+  // The optional chaining (?.) is good practice in case talent or icon_url is null/undefined initially.
+  return talent.value?.icon_url || null;
 });
 const subTalents = ref([]);
 const search = ref("");
@@ -538,7 +532,7 @@ const loadTalentData = () => {
   const allTalents = JSON.parse(localStorage.getItem('talents') || '[]');
   const foundTalent = categories.value.find(t => t.id == talentId);
 
-  
+ 
   if (!foundTalent) {
     toast.error('Talent not found.');
     router.push('/');
@@ -547,6 +541,7 @@ const loadTalentData = () => {
   }
 
   talent.value = foundTalent;
+   console.log('Talent Data:', talent.value.icon_url);
   // subTalents.value = JSON.parse(localStorage.getItem(`subTalents_${talent.value.id}`) || '[]');
   subTalents.value = foundTalent.subcategories || [];
   availableTalents.value = allTalents.map(t => ({ title: t.name, value: t.id }));
