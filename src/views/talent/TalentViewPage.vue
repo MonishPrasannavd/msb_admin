@@ -45,11 +45,11 @@
           <div class="talent-stats">
             <div class="stat-item d-flex justify-space-between align-center mb-3">
               <span class="text-body-2">Media Type:</span>
-              <v-chip color="info" size="small">{{ talent?.type || 'N/A' }}</v-chip>
+              <v-chip color="info" size="small">{{ talent?.category_type.name || 'N/A' }}</v-chip>
             </div>
             <div class="stat-item d-flex justify-space-between align-center mb-3">
               <span class="text-body-2">Total Sub-talents:</span>
-              <v-chip color="success" size="small">{{ subTalents.length|| "see shit"}}</v-chip>
+              <v-chip color="success" size="small">{{ subTalents.length|| "subtalent lengths"}}</v-chip>
             </div>
             <!-- <div class="stat-item d-flex justify-space-between align-center mb-3">
               <span class="text-body-2">Active:</span>
