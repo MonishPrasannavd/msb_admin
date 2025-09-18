@@ -96,7 +96,7 @@ Each line contains:
 
   Creadentials:
 
-  Email: admin@example.com
+Email: admin@example.com
 Password: 123456
 
 Email: user@gmail.com  
