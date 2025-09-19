@@ -28,7 +28,40 @@ export const useCategoryStore = defineStore('category', {
                 this.loading = false
             }
         },
+        async fetchSubmissionCountForCategory(categoryId) {
+            this.loading = true; // Sets the global loading state
+            this.error = null;
+            try {
+                // Step 1: Call the API with the specific category ID
+                const response = await api.post(
+            '/submission/all', 
+            {}, // 1. Send an EMPTY request body as the second argument.
+            {   // 2. Pass a config object as the THIRD argument.
+                params: { // 3. The 'params' key tells Axios to build the URL query string.
+                    category_id: categoryId,
+                    limit: 1 
+                }
+            }
+        );
+        
+                // Step 2: Extract the total from the response
+                const total = response.data.total || 0;
+        
+                // Step 3: Find the category in our state and update it
+                const categoryIndex = this.categories.findIndex(c => c.id === categoryId);
+        
+                if (categoryIndex !== -1) {
+                    // Update the specific category object with the new count
+                    this.categories[categoryIndex].submission_count = total;
+                }
 
+            } catch (err) {
+                this.error = `Failed to fetch count for category ${categoryId}`;
+                console.error(this.error, err);
+            } finally {
+                this.loading = false; // Resets the global loading state
+            }
+        },
         async createCategory(payload) {
             this.loading = true
             const formData = new FormData();
