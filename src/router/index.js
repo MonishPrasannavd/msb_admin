@@ -50,6 +50,7 @@ const routes = [
                 component: () => import('../views/talent/TalentViewPage.vue'),
                 meta: { requiresAuth: true }
             },
+            
 
 
 

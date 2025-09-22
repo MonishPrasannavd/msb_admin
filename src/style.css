@@ -27,8 +27,7 @@ body {
   padding: 0;
   min-width: 100vw;
   min-height: 100vh;
-  overflow-x: hidden;
-  overflow-y: auto;
+  overflow: hidden;
   color: #333333;
   font-family: 'Poppins', sans-serif;
 }
@@ -95,7 +94,7 @@ input {
   }
 }
 ::-webkit-scrollbar {
-  width: 8px;
+  width: 0px;
 }
 
 ::-webkit-scrollbar-track {
@@ -113,4 +112,8 @@ input {
 }
 .v-navigation-drawer__content::-webkit-scrollbar{
   display: none !important;
+}
+::-webkit-scrollbar {
+  width: 0px;
+  height: 0px;
 }
