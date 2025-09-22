@@ -1,55 +1,48 @@
 <template>
   <div class="talent-view-container">
     <div v-if="isLoading" class="loading-overlay">
-      <v-progress-circular
-        indeterminate
-        color="success"
-        size="64"
-      ></v-progress-circular>
+      <v-progress-circular indeterminate color="success" size="64"></v-progress-circular>
       <p class="mt-4 text-h6">Loading talent data...</p>
     </div>
-    
+
     <v-row no-gutters class="px-2" style="height: 100vh">
       <v-col cols="3" class="talent-info-section d-flex flex-column nav-border">
         <div class="d-flex justify-space-between align-center px-4 py-3">
           <span class="text-h5 font-weight-bold">{{ talent?.name || 'Talent' }}</span>
-          <v-btn
-            color="success"
-            variant="text"
-            size="small"
-            @click="router.push('/categories')"
-          >
+          <v-btn color="success" variant="text" size="small" @click="router.push('/categories')">
             <font-awesome-icon icon="fa-solid fa-arrow-left" class="mr-2" />
             Back
           </v-btn>
         </div>
-        
-        <div class="talent-details pa-4 mt-2">
+
+        <div class="talent-details pa-4">
           <div class="talent-avatar-container text-center mb-4">
             <v-avatar size="120" class="mb-3">
-              <v-img
-                v-if="talentIconPath"
-                :src="talentIconPath"
-                :alt="talentIconPath"
-                cover
-              ></v-img>
+              <v-img v-if="talentIconPath" :src="talentIconPath" :alt="talentIconPath" cover></v-img>
               <v-icon v-else icon="mdi-account" size="60" color="grey"></v-icon>
             </v-avatar>
             <h3 class="text-h6">{{ talent?.name }}</h3>
             <!-- <p class="text-caption text-grey">Added: {{ talent?.addedDate }}</p> -->
           </div>
-          
+
           <v-divider class="mb-4"></v-divider>
-          
+
 
           <div class="talent-stats">
             <div class="stat-item d-flex justify-space-between align-center mb-3">
               <span class="text-body-2">Media Type:</span>
-              <v-chip color="info" size="small">{{ talent?.type || 'N/A' }}</v-chip>
+              <v-chip color="info" size="small">{{ talent?.category_type.name || 'N/A' }}</v-chip>
             </div>
             <div class="stat-item d-flex justify-space-between align-center mb-3">
               <span class="text-body-2">Total Sub-talents:</span>
-              <v-chip color="success" size="small">{{ subTalents.length|| "see shit"}}</v-chip>
+              <v-chip color="success" size="small">{{ subTalents.length || "subtalent lengths" }}</v-chip>
+            </div>
+            <div class="stat-item d-flex justify-space-between align-center mb-3">
+              <span class="text-body-2">Total Submissions</span>
+              <v-chip color="success" size="small">
+                <!-- This will now automatically show '...' while loading, and then the number! -->
+                {{ submissionCount }}
+              </v-chip>
             </div>
             <!-- <div class="stat-item d-flex justify-space-between align-center mb-3">
               <span class="text-body-2">Active:</span>
@@ -61,15 +54,10 @@
             </div> -->
           </div>
         </div>
-        
-        <div class="py-3">
-          <v-btn
-            color="success"
-            class="text-none add-sub-talent-btn rounded-lg"
-            @click="openAddSubTalentDialog"
-            size="large"
-            block
-          >
+
+        <div class="px-4 py-3">
+          <v-btn color="success" class="text-none add-sub-talent-btn" @click="openAddSubTalentDialog" size="large"
+            block>
             <font-awesome-icon icon="fa-solid fa-plus" class="mr-2" />
             Add Sub-talent
           </v-btn>
@@ -78,111 +66,66 @@
 
       <v-col cols="9" class="content-section px-5">
         <div class="py-3 d-flex align-center">
-          <v-text-field
-            v-model="search" 
-            placeholder="Search sub-talents..."
-            variant="solo"
-            rounded="lg"
-            density="compact"
-            hide-details
-            class="mr-4 border-0 input-search"
-            bg-color="white"
-            style="max-width: 450px"
-          >
+          <v-text-field v-model="search" placeholder="Search sub-talents..." variant="solo" rounded="lg"
+            density="compact" hide-details class="mr-4 border-0 input-search" bg-color="white" style="max-width: 450px">
             <template v-slot:prepend-inner>
               <font-awesome-icon icon="fa-solid fa-search" class="search-icon" />
             </template>
           </v-text-field>
-          
-           <div class="filter-buttons d-flex align-center mr-4">
-             <font-awesome-icon icon="fa-solid fa-filter" class="filter-icon mr-2" />
-             
-             <v-btn
-               :variant="statusFilter === 'all' ? 'flat' : 'outlined'"
-               :color="statusFilter === 'all' ? 'success' : 'grey'"
-               size="small"
-               class="mr-2"
-               @click="setStatusFilter('all')"
-             >
-               All
-             </v-btn>
-             <v-btn
-               :variant="statusFilter === 'active' ? 'flat' : 'outlined'"
-               :color="statusFilter === 'active' ? 'success' : 'grey'"
-               size="small"
-               class="mr-2"
-               @click="setStatusFilter('active')"
-             >
-               Active
-             </v-btn>
-             <v-btn
-               :variant="statusFilter === 'inactive' ? 'flat' : 'outlined'"
-               :color="statusFilter === 'inactive' ? 'success' : 'grey'"
-               size="small"
-               @click="setStatusFilter('inactive')"
-             >
-               Inactive
-             </v-btn>
-           </div>
+
+          <div class="filter-buttons d-flex align-center mr-4">
+            <font-awesome-icon icon="fa-solid fa-filter" class="filter-icon mr-2" />
+
+            <v-btn :variant="statusFilter === 'all' ? 'flat' : 'outlined'"
+              :color="statusFilter === 'all' ? 'success' : 'grey'" size="small" class="mr-2"
+              @click="setStatusFilter('all')">
+              All
+            </v-btn>
+            <v-btn :variant="statusFilter === 'active' ? 'flat' : 'outlined'"
+              :color="statusFilter === 'active' ? 'success' : 'grey'" size="small" class="mr-2"
+              @click="setStatusFilter('active')">
+              Active
+            </v-btn>
+            <v-btn :variant="statusFilter === 'inactive' ? 'flat' : 'outlined'"
+              :color="statusFilter === 'inactive' ? 'success' : 'grey'" size="small"
+              @click="setStatusFilter('inactive')">
+              Inactive
+            </v-btn>
+          </div>
 
           <v-spacer></v-spacer>
 
           <div class="d-flex align-center mr-4">
             <div class="d-flex align-center mr-4">
-              <font-awesome-icon
-                icon="fa-solid fa-circle"
-                class="mr-1 text-success"
-              />
+              <font-awesome-icon icon="fa-solid fa-circle" class="mr-1 text-success" />
               <span class="text-caption status-text">Active({{ activeSubTalentsCount }})</span>
             </div>
             <div class="d-flex align-center">
-              <font-awesome-icon
-                icon="fa-solid fa-circle"
-                class="mr-1 text-warning"
-              />
+              <font-awesome-icon icon="fa-solid fa-circle" class="mr-1 text-warning" />
               <span class="text-caption status-text">Inactive({{ inactiveSubTalentsCount }})</span>
             </div>
           </div>
         </div>
-          
-        <div 
-          class="sub-talents-cards pa-6"
-          style="overflow-y: auto"
-        >
+
+        <div class="sub-talents-cards pa-6" style="overflow-y: auto">
           <v-row>
-            <v-col
-              v-for="subTalent in filteredSubTalents" 
-              :key="subTalent.id" 
-              cols="12"
-              md="6"
-            >
+            <v-col v-for="subTalent in filteredSubTalents" :key="subTalent.id" cols="12" md="6">
               <v-card flat class="pa-4 rounded-lg sub-talent-card">
                 <div class="d-flex justify-space-between align-center mb-2">
                   <div class="d-flex align-center">
-                    <v-switch
-                      :model-value="subTalent.isActive"
-                      color="success"
-                      hide-details
-                      density="compact"
-                      inset
-                      class="compact-switch mr-3"
-                      style="transform: scale(0.8); transform-origin: left center;"
-                      @update:model-value="toggleSubTalentStatus(subTalent.id)"
-                    ></v-switch>
+                    <v-switch :model-value="subTalent.isActive" color="success" hide-details density="compact" inset
+                      class="compact-switch mr-3" style="transform: scale(0.8); transform-origin: left center;"
+                      @update:model-value="toggleSubTalentStatus(subTalent.id)"></v-switch>
                     <div class="d-flex align-center status-chip">
-                      <font-awesome-icon 
-                        :icon="['fas', 'circle']" 
-                        :class="subTalent.isActive ? 'text-success' : 'text-warning'" 
-                        class="mr-1" 
-                        size="sm"
-                      />
+                      <font-awesome-icon :icon="['fas', 'circle']"
+                        :class="subTalent.isActive ? 'text-success' : 'text-warning'" class="mr-1" size="sm" />
                       <span class="text-caption">{{
                         subTalent.isActive ? "Active" : "Inactive"
-                      }}</span>
+                        }}</span>
                     </div>
                   </div>
                 </div>
-                
+
                 <div class="text-subtitle-1 font-weight-bold mb-2">
                   {{ subTalent.name }}
                 </div>
@@ -202,12 +145,8 @@
                 <div class="timer-section mb-3 pa-2 rounded" :class="getTimerClass(subTalent)">
                   <div class="d-flex align-center justify-space-between">
                     <div class="d-flex align-center">
-                      <font-awesome-icon 
-                        :icon="getTimerIcon(subTalent)" 
-                        :class="getTimerIconClass(subTalent)"
-                        class="mr-2" 
-                        size="sm"
-                      />
+                      <font-awesome-icon :icon="getTimerIcon(subTalent)" :class="getTimerIconClass(subTalent)"
+                        class="mr-2" size="sm" />
                       <span class="text-caption font-weight-medium" :class="getTimerTextClass(subTalent)">
                         {{ getTimerText(subTalent) }}
                       </span>
@@ -223,24 +162,14 @@
                 <div class="d-flex align-center text-caption text-grey mb-4">
                   <span>{{ subTalent.addedDate }}</span>
                 </div>
-                
+
                 <div class="d-flex justify-end align-center">
                   <div class="d-flex align-center gap-2">
-                    <v-btn
-                      variant="text"
-                      class="action-btn view-btn"
-                      size="small"
-                      @click="viewSubTalent(subTalent)"
-                    >
+                    <v-btn variant="text" class="action-btn view-btn" size="small" @click="viewSubTalent(subTalent)">
                       <font-awesome-icon icon="fa-solid fa-eye" class="mr-2" />
                       View
                     </v-btn>
-                    <v-btn
-                      variant="text"
-                      class="action-btn edit-btn"
-                      size="small"
-                      @click="editSubTalent(subTalent)"
-                    >
+                    <v-btn variant="text" class="action-btn edit-btn" size="small" @click="editSubTalent(subTalent)">
                       <font-awesome-icon icon="fa-solid fa-pencil" class="mr-2" />
                       Edit
                     </v-btn>
@@ -249,7 +178,7 @@
               </v-card>
             </v-col>
           </v-row>
-          
+
           <div v-if="filteredSubTalents.length === 0" class="text-center pa-8">
             <v-icon icon="mdi-account-group-outline" size="64" color="grey" class="mb-4"></v-icon>
             <h3 class="text-h6 text-grey-darken-1 mb-2">No Sub-talents Found</h3>
@@ -258,102 +187,56 @@
         </div>
       </v-col>
     </v-row>
-    
+
     <v-dialog v-model="showSubTalentDialog" max-width="600" persistent>
       <v-card class="sub-talent-dialog">
         <v-card-title class="text-h5 pa-4">
           {{ isEditing ? 'Edit' : 'Add' }} Sub-talent
         </v-card-title>
-        
+
         <v-card-text class="pa-4">
           <v-form ref="subTalentFormRef">
-            <v-text-field
-              v-model="subTalentForm.name"
-              label="Sub-talent Name"
-              variant="outlined"
-              density="comfortable"
-              placeholder="Enter sub-talent name"
-              class="mb-4"
-              required
-            ></v-text-field>
-            
-            <v-text-field
-              v-model="talent.name"
-              label="Talent Name"
-              variant="outlined"
-              density="comfortable"
-              readonly
-              class="mb-4"
-            ></v-text-field>
-            
-            <v-select
-              v-model="subTalentForm.grade"
-              :items="grades"
-              label="Grade"
-              variant="outlined"
-              density="comfortable"
-              placeholder="Select grade"
-              class="mb-4"
-              required
-            ></v-select>
-            
+            <v-text-field v-model="subTalentForm.name" label="Sub-talent Name" variant="outlined" density="comfortable"
+              placeholder="Enter sub-talent name" class="mb-4" required></v-text-field>
+
+            <v-text-field v-model="talent.name" label="Talent Name" variant="outlined" density="comfortable" readonly
+              class="mb-4"></v-text-field>
+
+            <v-select v-model="subTalentForm.grade" :items="grades" label="Grade" variant="outlined"
+              density="comfortable" placeholder="Select grade" class="mb-4" required></v-select>
+
             <v-row>
               <v-col cols="6">
-                <v-text-field
-                  v-model="subTalentForm.startDate"
-                  label="Start Date"
-                  variant="outlined"
-                  density="comfortable"
-                  type="datetime-local"
-                  placeholder="Select start date"
-                  class="mb-4"
-                  required
-                ></v-text-field>
+                <v-text-field v-model="subTalentForm.startDate" label="Start Date" variant="outlined"
+                  density="comfortable" type="datetime-local" placeholder="Select start date" class="mb-4"
+                  required></v-text-field>
               </v-col>
               <v-col cols="6">
-                <v-text-field
-                  v-model="subTalentForm.endDate"
-                  label="End Date"
-                  variant="outlined"
-                  density="comfortable"
-                  type="datetime-local"
-                  placeholder="Select end date"
-                  class="mb-4"
-                  required
-                ></v-text-field>
+                <v-text-field v-model="subTalentForm.endDate" label="End Date" variant="outlined" density="comfortable"
+                  type="datetime-local" placeholder="Select end date" class="mb-4" required></v-text-field>
               </v-col>
             </v-row>
           </v-form>
         </v-card-text>
-        
+
         <v-card-actions class="pa-4">
           <v-spacer></v-spacer>
-          <v-btn
-            color="grey-darken-1"
-            variant="text"
-            @click="closeSubTalentDialog"
-          >
+          <v-btn color="grey-darken-1" variant="text" @click="closeSubTalentDialog">
             Cancel
           </v-btn>
-          <v-btn
-            color="success"
-            variant="flat"
-            @click="saveSubTalent"
-            :loading="isSaving"
-            :disabled="!isSubTalentFormValid"
-            class="add-sub-talent-btn-dialog"
-          >
+          <v-btn color="success" variant="flat" @click="saveSubTalent" :loading="isSaving"
+            :disabled="!isSubTalentFormValid" class="add-sub-talent-btn-dialog">
             {{ isEditing ? 'Update' : 'Add' }} Sub-talent
           </v-btn>
         </v-card-actions>
       </v-card>
     </v-dialog>
-    
+
     <v-dialog v-model="showViewDialog" width="700">
       <v-card class="sub-talent-view-dialog">
         <v-card-title class="d-flex flex-column align-start pa-6">
           <div class="text-h5 font-weight-bold mb-4">{{ selectedSubTalent?.name }}</div>
-          
+
           <div class="d-flex flex-wrap gap-6">
             <div class="info-item">
               <div class="text-caption text-medium-emphasis">Talent</div>
@@ -378,28 +261,20 @@
             <div class="info-item">
               <div class="text-caption text-medium-emphasis">Status</div>
               <div class="text-subtitle-1 d-flex align-center">
-                <font-awesome-icon 
-                  :icon="['fas', 'circle']" 
-                  :class="selectedSubTalent?.isActive ? 'text-success' : 'text-warning'" 
-                  class="mr-2" 
-                  size="sm"
-                />
+                <font-awesome-icon :icon="['fas', 'circle']"
+                  :class="selectedSubTalent?.isActive ? 'text-success' : 'text-warning'" class="mr-2" size="sm" />
                 {{ selectedSubTalent?.isActive ? 'Active' : 'Inactive' }}
               </div>
             </div>
           </div>
         </v-card-title>
-           
+
         <v-card-text class="pa-6 pt-0">
           <div class="timer-section mb-4 pa-3 rounded" :class="getTimerClass(selectedSubTalent)">
             <div class="d-flex align-center justify-space-between">
               <div class="d-flex align-center">
-                <font-awesome-icon 
-                  :icon="getTimerIcon(selectedSubTalent)" 
-                  :class="getTimerIconClass(selectedSubTalent)"
-                  class="mr-2" 
-                  size="sm"
-                />
+                <font-awesome-icon :icon="getTimerIcon(selectedSubTalent)" :class="getTimerIconClass(selectedSubTalent)"
+                  class="mr-2" size="sm" />
                 <span class="text-subtitle-2 font-weight-medium" :class="getTimerTextClass(selectedSubTalent)">
                   {{ getTimerText(selectedSubTalent) }}
                 </span>
@@ -415,11 +290,7 @@
 
         <v-card-actions class="pa-6 pt-0">
           <v-spacer></v-spacer>
-          <v-btn
-            color="success"
-            variant="text"
-            @click="showViewDialog = false"
-          >
+          <v-btn color="success" variant="text" @click="showViewDialog = false">
             Close
           </v-btn>
         </v-card-actions>
@@ -437,6 +308,8 @@ import { useCategoryStore } from "@/stores/category";
 const categoryStore = useCategoryStore();
 
 const categories = computed(() => categoryStore.categories);
+
+
 
 // NOTE: Replace with your actual toast notification plugin, e.g., from 'vue-toastification'
 // import { useToast } from 'vue-toastification';
@@ -459,6 +332,17 @@ const talentIconPath = computed(() => {
   return talent.value?.icon_url || null;
 });
 const subTalents = ref([]);
+// const submissionCount = ref(0);
+// ADD THIS COMPUTED PROPERTY INSTEAD:
+const submissionCount = computed(() => {
+  // Find our current talent again in the store's reactive categories array
+  const currentTalent = categoryStore.categories.find(c => c.id == route.params.id);
+
+  // Use the optional chaining (?.) and nullish coalescing (??) operators.
+  // This means: "Try to get submission_count. If it doesn't exist yet, show '...' as a placeholder."
+  return currentTalent?.submission_count ?? '...';
+});
+const isLoadingCount = ref(false); // Optional: for a nice loading state
 const search = ref("");
 const showSubTalentDialog = ref(false);
 const showViewDialog = ref(false);
@@ -511,28 +395,28 @@ const inactiveSubTalentsCount = computed(() => {
 });
 
 const isSubTalentFormValid = computed(() => {
-  return subTalentForm.name.trim() && 
-         subTalentForm.grade && 
-         subTalentForm.startDate && 
-         subTalentForm.endDate;
+  return subTalentForm.name.trim() &&
+    subTalentForm.grade &&
+    subTalentForm.startDate &&
+    subTalentForm.endDate;
 });
 
 // METHODS
 const loadTalentData = () => {
   isLoading.value = true;
   const talentId = route.params.id;
-  
+
   if (!talentId) {
     toast.error('No talent ID provided. Please select a talent.');
     router.push('/');
     isLoading.value = false;
     return;
   }
-  
+
   const allTalents = JSON.parse(localStorage.getItem('talents') || '[]');
   const foundTalent = categories.value.find(t => t.id == talentId);
 
- 
+
   if (!foundTalent) {
     toast.error('Talent not found.');
     router.push('/');
@@ -541,11 +425,12 @@ const loadTalentData = () => {
   }
 
   talent.value = foundTalent;
-   console.log('Talent Data:', talent.value.icon_url);
+  console.log('Talent Data icon:', talent.value.icon_url);
+  console.log('Talent Data:', talent.value);
   // subTalents.value = JSON.parse(localStorage.getItem(`subTalents_${talent.value.id}`) || '[]');
   subTalents.value = foundTalent.subcategories || [];
   availableTalents.value = allTalents.map(t => ({ title: t.name, value: t.id }));
-  
+  categoryStore.fetchSubmissionCountForCategory(talent.value.id);
   isLoading.value = false;
 };
 
@@ -584,9 +469,9 @@ const closeSubTalentDialog = () => {
 
 const saveSubTalent = async () => {
   if (!isSubTalentFormValid.value) return;
-  
+
   isSaving.value = true;
-  
+
   try {
     const subTalentData = {
       id: isEditing.value ? selectedSubTalent.value.id : Date.now(),
@@ -599,7 +484,7 @@ const saveSubTalent = async () => {
       addedDate: isEditing.value ? selectedSubTalent.value.addedDate : new Date().toLocaleDateString(),
       talentId: talent.value.id
     };
-    
+
     if (isEditing.value) {
       const index = subTalents.value.findIndex(st => st.id === subTalentData.id);
       if (index !== -1) {
@@ -608,9 +493,9 @@ const saveSubTalent = async () => {
     } else {
       subTalents.value.push(subTalentData);
     }
-    
+
     localStorage.setItem(`subTalents_${talent.value.id}`, JSON.stringify(subTalents.value));
-    
+
     closeSubTalentDialog();
     toast.success(`Sub-talent ${isEditing.value ? 'updated' : 'added'} successfully!`);
   } catch (error) {
@@ -697,10 +582,10 @@ const formatTime = (milliseconds) => {
 
 const getTimerDisplay = (subTalent) => {
   if (!subTalent?.startDate || !subTalent?.endDate) return null;
-  
+
   // This line ensures the computed property is re-evaluated when renderTrigger changes
   const _ = renderTrigger.value;
-  
+
   const now = new Date();
   const start = new Date(subTalent.startDate);
   const end = new Date(subTalent.endDate);
@@ -780,30 +665,30 @@ onBeforeUnmount(() => {
   transform: translateY(-2px);
   box-shadow: 0 4px 12px rgba(76, 175, 80, 0.2);
 }
- 
- .filter-buttons {
-   .v-btn {
-     border-radius: 8px !important;
-     font-weight: 500 !important;
-     text-transform: none !important;
-     transition: all 0.3s ease !important;
-   }
-   
-   .v-btn:hover {
-     color: #4caf50 !important;
-     border: 1px solid #4caf50 !important;
-     transform: translateY(-1px);
-     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-   }
-   
-   .filter-icon {
-     color: #4caf50;
-     font-size: 16px;
-     transition: all 0.3s ease;
-   }
- }
- 
- .content-section {
+
+.filter-buttons {
+  .v-btn {
+    border-radius: 8px !important;
+    font-weight: 500 !important;
+    text-transform: none !important;
+    transition: all 0.3s ease !important;
+  }
+
+  .v-btn:hover {
+    color: #4caf50 !important;
+    border: 1px solid #4caf50 !important;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  }
+
+  .filter-icon {
+    color: #4caf50;
+    font-size: 16px;
+    transition: all 0.3s ease;
+  }
+}
+
+.content-section {
   height: 100vh;
   padding: 20px;
   background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%);
@@ -947,7 +832,7 @@ onBeforeUnmount(() => {
 }
 
 .timer-section {
-  background-color:transparent !important;
+  background-color: transparent !important;
   padding: 8px 12px;
   display: flex;
   align-items: center;
@@ -980,22 +865,23 @@ onBeforeUnmount(() => {
   font-size: 0.8em;
   margin-left: 10px;
 }
+
 .add-sub-talent-btn-dialog:hover {
   color: #4caf50 !important;
   border: 2px solid #4caf50 !important;
 }
- 
- .loading-overlay {
-   position: fixed;
-   top: 0;
-   left: 0;
-   right: 0;
-   bottom: 0;
-   background-color: rgba(255, 255, 255, 0.9);
-   display: flex;
-   flex-direction: column;
-   align-items: center;
-   justify-content: center;
-   z-index: 9999;
- }
+
+.loading-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(255, 255, 255, 0.9);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+}
 </style>
