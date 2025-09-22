@@ -24,7 +24,7 @@
           </v-btn>
         </div>
         
-        <div class="talent-details pa-4">
+        <div class="talent-details pa-4 mt-2">
           <div class="talent-avatar-container text-center mb-4">
             <v-avatar size="120" class="mb-3">
               <v-img
@@ -62,10 +62,10 @@
           </div>
         </div>
         
-        <div class="px-4 py-3">
+        <div class="py-3">
           <v-btn
             color="success"
-            class="text-none add-sub-talent-btn"
+            class="text-none add-sub-talent-btn rounded-lg"
             @click="openAddSubTalentDialog"
             size="large"
             block

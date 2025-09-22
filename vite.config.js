@@ -9,4 +9,5 @@ export default defineConfig({
       '@': path.resolve(__dirname, './src'),   // ✅ alias set
     },
   },
+  // base: '/msb_admin/'
 })

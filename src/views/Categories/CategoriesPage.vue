@@ -54,11 +54,12 @@
         >
           <i class="fa-solid fa-pen-to-square"></i>
         </v-btn>
-        <v-btn 
-          @click="removeCategory(item.id)"  
+        <v-btn
+          @click="removeCategory(item.id)"
           icon="mdi-plus"
           density="comfortable"
-          class="me-4 delete-btn">
+          class="me-4 delete-btn"
+        >
           <i class="fa-solid fa-trash"></i>
         </v-btn>
         <v-btn
@@ -75,7 +76,7 @@
       </template>
 
       <template #item.name="{ item }">
-        <p  class="ps-3 text-subtitle-1">
+        <p class="ps-3 text-subtitle-1">
           {{ item.name }}
         </p>
       </template>
@@ -103,14 +104,19 @@
     <!-- Dialog for Create / Edit Category -->
     <v-dialog v-model="dialog" max-width="480">
       <v-card>
-        <v-card-title class="justify-space-between align-center">
-          <span class="text-h6">{{
-            form.id ? "Edit Category" : "Add Category"
-          }}</span>
+         <div class="d-flex flex-row justify-space-between">
+          <v-card-title class="justify-space-between align-center">
+          <span class="text-h6">
+            {{
+              form.id ? "Edit Category" : "Add Category"
+            }}
+          </span>
+          
+        </v-card-title>
           <v-btn icon @click="closeDialog" variant="text">
             <v-icon>mdi-close</v-icon>
           </v-btn>
-        </v-card-title>
+         </div>
 
         <v-divider></v-divider>
 
@@ -122,40 +128,61 @@
           >
             <v-text-field
               v-model="form.name"
+              variant="solo"
+              rounded="lg"
+              bg-color="white"
+              color="#4caf50" 
               label="Category Name"
               :rules="[(v) => !!v || 'Name is required']"
               required
               prepend-inner-icon="mdi-tag"
+              density="comfortable"
+              class="custom-shadow"
             ></v-text-field>
+
+            
+            <v-select
+              v-model="form.type"
+              :items="[
+                { title: 'Image', value: 0 },
+                { title: 'Video', value: 1 },
+                { title: 'Audio', value: 2 },
+                { title: 'Text', value: 3 },
+                { title: 'Quiz', value: 4 },
+              ]"
+             
+              required
+              variant="solo"
+              rounded="lg"
+              bg-color="white"
+              label="Select Media Type"
+              density="comfortable"
+              class="custom-shadow"
+            ></v-select>
+
+            <v-switch
+              v-model="form.is_future"
+              label="Is Future?"
+              density="compact"
+              color="success"
+              class="ms-3 custom-shadow"
+            ></v-switch>
+
 
             <v-file-input
               v-model="form.icon"
-              label="Category Icon"
+              label="Upload Image"
+              variant="plain"
+              rounded="lg"
+              bg-color="white"
+              prepend-inner-icon="mdi-image"
               accept="image/*"
               :multiple="false"
               clearable
               show-size
-              prepend-icon="mdi-image"
+              density="comfortable"
             ></v-file-input>
-
-            <div class="d-flex align-center gap-4">
-              <v-switch
-                v-model="form.is_future"
-                label="Is Future?"
-                inset
-              ></v-switch>
-              <v-select
-                v-model="form.type"
-                :items="[
-                  { title: 'Type 0', value: 0 },
-                  { title: 'Type 1', value: 1 },
-                  { title: 'Type 2', value: 2 },
-                ]"
-                label="Type"
-                class="flex-grow-1"
-                required
-              ></v-select>
-            </div>
+            
           </v-form>
         </v-card-text>
 
@@ -164,7 +191,7 @@
         <v-card-actions class="justify-end">
           <v-btn variant="text" @click="closeDialog">Cancel</v-btn>
           <v-btn
-            color="primary"
+            class="add-category"
             :loading="loading"
             @click="handleSubmit"
             variant="flat"
@@ -189,7 +216,7 @@ const categoryStore = useCategoryStore();
 const categories = computed(() => categoryStore.categories);
 const pagination = computed(() => categoryStore.pagination);
 
-const form = ref({ id: null, name: "", icon: "", is_future: 0, type: 0 });
+const form = ref({ id: null, name: "", icon: "", is_future: 0, type: null });
 const search = ref("");
 const options = ref({ page: 1, itemsPerPage: 10, sortBy: [], sortDesc: [] });
 const dialog = ref(false);
@@ -246,12 +273,12 @@ const closeDialog = () => {
 
 //changed string to null for icon
 const resetForm = () => {
-  form.value = { id: null, name: "", icon: null, is_future: false, type: 0 };
+  form.value = { id: null, name: "", icon: null, is_future: false, type: null };
 };
 </script>
 
 <style>
-.auth-layout{
+.auth-layout {
   background: transparent !important;
 }
 .add-category {
@@ -259,6 +286,10 @@ const resetForm = () => {
   color: #fff;
   border: 1px solid #4caf50;
   transition: all 0.8s ease;
+}
+.v-messages__message{
+  line-height: 2rem !important;
+  font-size: 0.85rem;
 }
 .input-search {
   :deep(.v-field__input::placeholder) {
@@ -276,6 +307,9 @@ const resetForm = () => {
     box-shadow: 0 4px 12px rgba(76, 175, 80, 0.1);
   }
 }
+.v-input--horizontal .v-input__prepend{
+  display: none;
+}
 .search-icon {
   color: #4caf50 !important;
 }
@@ -288,43 +322,42 @@ const resetForm = () => {
 table tbody tr td {
   padding: 7px !important;
 }
-table thead tr th{
+table thead tr th {
   font-size: 1rem !important;
   font-weight: 500;
-  color: #4caf50; 
+  color: #4caf50;
 }
-.view-btn{
- background-color: #4caf50;
- color: #fff;
- border: 1px solid #4caf50;
- transition: all 0.8s ease;
+.view-btn {
+  background-color: #4caf50;
+  color: #fff;
+  border: 1px solid #4caf50;
+  transition: all 0.8s ease;
 }
-.view-btn:hover{
+.view-btn:hover {
   background-color: #fff;
-  color:#4caf50;
+  color: #4caf50;
+}
 
+.delete-btn {
+  background-color: #dc3545;
+  color: #fff;
+  border: 1px solid #dc3545;
+  transition: all 0.8s ease;
 }
-.delete-btn{
- background-color: #dc3545;
- color: #fff;
- border: 1px solid #dc3545;
- transition: all 0.8s ease;
-}
-.delete-btn:hover{
+.delete-btn:hover {
   background-color: #fff;
-  color:#dc3545;
+  color: #dc3545;
 }
-.edit-btn{
+.edit-btn {
   background-color: #0d6efd;
- color: #fff;
- border: 1px solid #0d6efd;
- transition: all 0.8s ease;
+  color: #fff;
+  border: 1px solid #0d6efd;
+  transition: all 0.8s ease;
 }
-.edit-btn:hover{
+.edit-btn:hover {
   color: #0d6efd;
 }
 .responsive-table {
   height: calc(100vh - 220px); /* 64px = app-bar height */
-
 }
 </style>
