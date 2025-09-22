@@ -54,13 +54,14 @@
         >
           <i class="fa-solid fa-pen-to-square"></i>
         </v-btn>
-        <v-btn 
-          @click="removeCategory(item.id)"  
-          icon="mdi-plus"
-          density="comfortable"
-          class="me-4 delete-btn">
-          <i class="fa-solid fa-trash"></i>
-        </v-btn>
+
+<v-btn 
+  @click="openDeleteDialog(item)"  
+  icon="mdi-plus"
+  density="comfortable"
+  class="me-4 delete-btn">
+  <i class="fa-solid fa-trash"></i>
+</v-btn>
         <v-btn
           :to="{ name: 'TalentView', params: { id: item.id } }"
           icon="mdi-plus"
@@ -75,7 +76,7 @@
       </template>
 
       <template #item.name="{ item }">
-        <p  class="ps-3 text-subtitle-1">
+        <p class="ps-3 text-subtitle-1">
           {{ item.name }}
         </p>
       </template>
@@ -137,7 +138,15 @@
               show-size
               prepend-icon="mdi-image"
             ></v-file-input>
-
+            <v-img
+              v-if="imagePreviewUrl"
+              :src="imagePreviewUrl"
+              height="50"
+              width="50"
+              class="my-2"
+              cover
+              alt="Category Icon Preview"
+            ></v-img>
             <div class="d-flex align-center gap-4">
               <v-switch
                 v-model="form.is_future"
@@ -177,6 +186,36 @@
         </v-card-actions>
       </v-card>
     </v-dialog>
+
+    <!-- <v-dialog v-model="dialog" max-width="480">
+  </v-dialog> -->
+
+
+<v-dialog v-model="deleteDialog" max-width="480">
+  <v-card>
+    <v-card-title class="text-h5">
+      Confirm Deletion
+    </v-card-title>
+    <v-card-text>
+      Are you sure you want to delete 
+      <strong>{{ itemToDelete?.name }}</strong>? This action cannot be undone.
+    </v-card-text>
+    <v-card-actions>
+      <v-spacer></v-spacer>
+      <v-btn variant="text" @click="closeDeleteDialog">
+        Cancel
+      </v-btn>
+      <v-btn
+        color="red-darken-1"
+        variant="flat"
+        :loading="loading"
+        @click="confirmDelete"
+      >
+        Yes, Delete
+      </v-btn>
+    </v-card-actions>
+  </v-card>
+</v-dialog>
   </div>
 </template>
 
@@ -195,6 +234,26 @@ const options = ref({ page: 1, itemsPerPage: 10, sortBy: [], sortDesc: [] });
 const dialog = ref(false);
 const loading = computed(() => categoryStore.loading);
 
+const deleteDialog = ref(false);
+const itemToDelete = ref(null);
+
+const imagePreviewUrl = computed(() => {
+  // Case 1: A new file has been selected by the user.
+  // `form.value.icon` will be a File object.
+  if (form.value.icon && form.value.icon instanceof File) {
+    // Create a temporary local URL for the selected file.
+    return URL.createObjectURL(form.value.icon);
+  }
+
+  // Case 2: We are editing an existing item that has an icon_url.
+  if (form.value.icon_url) {
+    return form.value.icon_url;
+  }
+
+  // Case 3: No image is available.
+  return null;
+});
+
 const headers = [
   { title: "Name", value: "name" },
   { title: "Icon", value: "icon" },
@@ -203,11 +262,15 @@ const headers = [
   { title: "Actions", value: "actions", sortable: false },
 ];
 
-const loadCategories = (page = 1) => {
+// CORRECTED: This function now correctly uses the 'options' ref
+const loadCategories = () => {
   categoryStore.fetchCategories({
-    page,
-    per_page: pagination.value.per_page || 10,
+    page: options.value.page,
+    per_page: options.value.itemsPerPage,
     search: search.value,
+    // You could also pass sorting options here if your API supports it
+    // sortBy: options.value.sortBy, 
+    // sortDesc: options.value.sortDesc,
   });
 };
 
@@ -215,24 +278,33 @@ watch(options, loadCategories, { deep: true });
 onMounted(loadCategories);
 
 const handleSubmit = async () => {
-  if (form.value.id) {
-    await categoryStore.updateCategory(form.value.id, form.value);
-  } else {
-    await categoryStore.createCategory(form.value);
+  const formData = new FormData();
+  formData.append("name", form.value.name);
+  formData.append("is_future", form.value.is_future ? 1 : 0);
+  formData.append("type", form.value.type);
+
+  if (form.value.id) { // Logic for UPDATE
+    if (form.value.icon && form.value.icon instanceof File) {
+      formData.append("icon", form.value.icon);
+    }
+    await categoryStore.updateCategory(form.value.id, formData);
+  } else { // Logic for CREATE
+    // BUG FIX: v-file-input (when not multiple) returns a single File object, NOT an array.
+    // Accessing form.value.icon[0] would cause an error.
+    if (form.value.icon && form.value.icon instanceof File) {
+      formData.append("icon", form.value.icon);
+    }
+    await categoryStore.createCategory(formData);
   }
+  
   resetForm();
   closeDialog();
   loadCategories();
 };
 
-const removeCategory = async (id) => {
-  await categoryStore.deleteCategory(id);
-  loadCategories();
-};
-
 const openDialog = (item = null) => {
   if (item) {
-    form.value = { ...item };
+    form.value = { ...item, icon: null };
   } else {
     resetForm();
   }
@@ -244,14 +316,31 @@ const closeDialog = () => {
   resetForm();
 };
 
-//changed string to null for icon
+const openDeleteDialog = (item) => {
+  itemToDelete.value = item;
+  deleteDialog.value = true;
+};
+
+const closeDeleteDialog = () => {
+  deleteDialog.value = false;
+  itemToDelete.value = null;
+};
+
+const confirmDelete = async () => {
+  if (itemToDelete.value) {
+    await categoryStore.deleteCategory(itemToDelete.value.id);
+    closeDeleteDialog();
+    loadCategories();
+  }
+};
+
 const resetForm = () => {
   form.value = { id: null, name: "", icon: null, is_future: false, type: 0 };
 };
 </script>
 
 <style>
-.auth-layout{
+.auth-layout {
   background: transparent !important;
 }
 .add-category {
@@ -288,43 +377,41 @@ const resetForm = () => {
 table tbody tr td {
   padding: 7px !important;
 }
-table thead tr th{
+table thead tr th {
   font-size: 1rem !important;
   font-weight: 500;
-  color: #4caf50; 
+  color: #4caf50;
 }
-.view-btn{
- background-color: #4caf50;
- color: #fff;
- border: 1px solid #4caf50;
- transition: all 0.8s ease;
+.view-btn {
+  background-color: #4caf50;
+  color: #fff;
+  border: 1px solid #4caf50;
+  transition: all 0.8s ease;
 }
-.view-btn:hover{
+.view-btn:hover {
   background-color: #fff;
-  color:#4caf50;
-
+  color: #4caf50;
 }
-.delete-btn{
- background-color: #dc3545;
- color: #fff;
- border: 1px solid #dc3545;
- transition: all 0.8s ease;
+.delete-btn {
+  background-color: #dc3545;
+  color: #fff;
+  border: 1px solid #dc3545;
+  transition: all 0.8s ease;
 }
-.delete-btn:hover{
+.delete-btn:hover {
   background-color: #fff;
-  color:#dc3545;
+  color: #dc3545;
 }
-.edit-btn{
+.edit-btn {
   background-color: #0d6efd;
- color: #fff;
- border: 1px solid #0d6efd;
- transition: all 0.8s ease;
+  color: #fff;
+  border: 1px solid #0d6efd;
+  transition: all 0.8s ease;
 }
-.edit-btn:hover{
+.edit-btn:hover {
   color: #0d6efd;
 }
 .responsive-table {
   height: calc(100vh - 220px); /* 64px = app-bar height */
-
 }
 </style>

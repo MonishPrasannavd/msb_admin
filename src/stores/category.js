@@ -83,10 +83,15 @@ export const useCategoryStore = defineStore('category', {
             }
         },
 
-        async updateCategory(id, payload) {
+        async updateCategory(id, formData) {
             this.loading = true
             try {
-                await api.put(`/category/update-category/${id}`, payload)
+                formData.append('_method', 'PUT'); 
+                await api.post(`/category/update-category/${id}`, formData, {
+                    headers: {
+                        'Content-Type': 'multipart/form-data'
+                    }
+                });
                 return true
             } catch (err) {
                 this.error = err.response?.data?.message || 'Failed to update category'
