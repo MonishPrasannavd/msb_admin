@@ -55,13 +55,14 @@
           <i class="fa-solid fa-pen-to-square"></i>
         </v-btn>
 
-<v-btn 
-  @click="openDeleteDialog(item)"  
-  icon="mdi-plus"
-  density="comfortable"
-  class="me-4 delete-btn">
-  <i class="fa-solid fa-trash"></i>
-</v-btn>
+        <v-btn
+          @click="openDeleteDialog(item)"
+          icon="mdi-plus"
+          density="comfortable"
+          class="me-4 delete-btn"
+        >
+          <i class="fa-solid fa-trash"></i>
+        </v-btn>
         <v-btn
           :to="{ name: 'TalentView', params: { id: item.id } }"
           icon="mdi-plus"
@@ -104,14 +105,16 @@
     <!-- Dialog for Create / Edit Category -->
     <v-dialog v-model="dialog" max-width="480">
       <v-card>
-        <v-card-title class="justify-space-between align-center">
-          <span class="text-h6">{{
-            form.id ? "Edit Category" : "Add Category"
-          }}</span>
+        <div class="d-flex flex-row justify-space-between">
+          <v-card-title class="justify-space-between align-center">
+            <span class="text-h6">
+              {{ form.id ? "Edit Category" : "Add Category" }}
+            </span>
+          </v-card-title>
           <v-btn icon @click="closeDialog" variant="text">
             <v-icon>mdi-close</v-icon>
           </v-btn>
-        </v-card-title>
+        </div>
 
         <v-divider></v-divider>
 
@@ -123,31 +126,68 @@
           >
             <v-text-field
               v-model="form.name"
+              variant="solo"
+              rounded="lg"
+              bg-color="white"
+              color="#4caf50"
               label="Category Name"
               :rules="[(v) => !!v || 'Name is required']"
               required
               prepend-inner-icon="mdi-tag"
+              density="comfortable"
+              class="custom-shadow"
             ></v-text-field>
+
+            <v-select
+              v-model="form.type"
+              :items="[
+                { title: 'Image', value: 0 },
+                { title: 'Video', value: 1 },
+                { title: 'Audio', value: 2 },
+                { title: 'Text', value: 3 },
+                { title: 'Quiz', value: 4 },
+              ]"
+              required
+              variant="solo"
+              rounded="lg"
+              bg-color="white"
+              label="Select Media Type"
+              density="comfortable"
+              class="custom-shadow"
+            ></v-select>
+
+            <v-switch
+              v-model="form.is_future"
+              label="Is Future?"
+              density="compact"
+              color="success"
+              class="ms-3 custom-shadow"
+            ></v-switch>
 
             <v-file-input
               v-model="form.icon"
-              label="Category Icon"
+              label="Upload Image"
+              variant="plain"
+              rounded="lg"
+              bg-color="white"
+              prepend-inner-icon="mdi-image"
               accept="image/*"
               :multiple="false"
               clearable
               show-size
-              prepend-icon="mdi-image"
+              density="comfortable"
             ></v-file-input>
+
             <v-img
               v-if="imagePreviewUrl"
               :src="imagePreviewUrl"
-              height="50"
-              width="50"
+              height="100"
+              width="100"
               class="my-2"
               cover
               alt="Category Icon Preview"
             ></v-img>
-            <div class="d-flex align-center gap-4">
+            <!-- <div class="d-flex align-center gap-4">
               <v-switch
                 v-model="form.is_future"
                 label="Is Future?"
@@ -164,7 +204,7 @@
                 class="flex-grow-1"
                 required
               ></v-select>
-            </div>
+            </div> -->
           </v-form>
         </v-card-text>
 
@@ -173,7 +213,7 @@
         <v-card-actions class="justify-end">
           <v-btn variant="text" @click="closeDialog">Cancel</v-btn>
           <v-btn
-            color="primary"
+            class="add-category"
             :loading="loading"
             @click="handleSubmit"
             variant="flat"
@@ -190,32 +230,28 @@
     <!-- <v-dialog v-model="dialog" max-width="480">
   </v-dialog> -->
 
-
-<v-dialog v-model="deleteDialog" max-width="480">
-  <v-card>
-    <v-card-title class="text-h5">
-      Confirm Deletion
-    </v-card-title>
-    <v-card-text>
-      Are you sure you want to delete 
-      <strong>{{ itemToDelete?.name }}</strong>? This action cannot be undone.
-    </v-card-text>
-    <v-card-actions>
-      <v-spacer></v-spacer>
-      <v-btn variant="text" @click="closeDeleteDialog">
-        Cancel
-      </v-btn>
-      <v-btn
-        color="red-darken-1"
-        variant="flat"
-        :loading="loading"
-        @click="confirmDelete"
-      >
-        Yes, Delete
-      </v-btn>
-    </v-card-actions>
-  </v-card>
-</v-dialog>
+    <v-dialog v-model="deleteDialog" max-width="480">
+      <v-card>
+        <v-card-title class="text-h5"> Confirm Deletion </v-card-title>
+        <v-card-text>
+          Are you sure you want to delete
+          <strong>{{ itemToDelete?.name }}</strong
+          >? This action cannot be undone.
+        </v-card-text>
+        <v-card-actions>
+          <v-spacer></v-spacer>
+          <v-btn variant="text" @click="closeDeleteDialog"> Cancel </v-btn>
+          <v-btn
+            color="red-darken-1"
+            variant="flat"
+            :loading="loading"
+            @click="confirmDelete"
+          >
+            Delete
+          </v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
   </div>
 </template>
 
@@ -228,7 +264,7 @@ const categoryStore = useCategoryStore();
 const categories = computed(() => categoryStore.categories);
 const pagination = computed(() => categoryStore.pagination);
 
-const form = ref({ id: null, name: "", icon: "", is_future: 0, type: 0 });
+const form = ref({ id: null, name: "", icon: "", is_future: 0, type: null });
 const search = ref("");
 const options = ref({ page: 1, itemsPerPage: 10, sortBy: [], sortDesc: [] });
 const dialog = ref(false);
@@ -269,7 +305,7 @@ const loadCategories = () => {
     per_page: options.value.itemsPerPage,
     search: search.value,
     // You could also pass sorting options here if your API supports it
-    // sortBy: options.value.sortBy, 
+    // sortBy: options.value.sortBy,
     // sortDesc: options.value.sortDesc,
   });
 };
@@ -283,12 +319,14 @@ const handleSubmit = async () => {
   formData.append("is_future", form.value.is_future ? 1 : 0);
   formData.append("type", form.value.type);
 
-  if (form.value.id) { // Logic for UPDATE
+  if (form.value.id) {
+    // Logic for UPDATE
     if (form.value.icon && form.value.icon instanceof File) {
       formData.append("icon", form.value.icon);
     }
     await categoryStore.updateCategory(form.value.id, formData);
-  } else { // Logic for CREATE
+  } else {
+    // Logic for CREATE
     // BUG FIX: v-file-input (when not multiple) returns a single File object, NOT an array.
     // Accessing form.value.icon[0] would cause an error.
     if (form.value.icon && form.value.icon instanceof File) {
@@ -296,7 +334,7 @@ const handleSubmit = async () => {
     }
     await categoryStore.createCategory(formData);
   }
-  
+
   resetForm();
   closeDialog();
   loadCategories();
@@ -335,7 +373,7 @@ const confirmDelete = async () => {
 };
 
 const resetForm = () => {
-  form.value = { id: null, name: "", icon: null, is_future: false, type: 0 };
+  form.value = { id: null, name: "", icon: null, is_future: false, type: null };
 };
 </script>
 
@@ -348,6 +386,10 @@ const resetForm = () => {
   color: #fff;
   border: 1px solid #4caf50;
   transition: all 0.8s ease;
+}
+.v-messages__message {
+  line-height: 2rem !important;
+  font-size: 0.85rem;
 }
 .input-search {
   :deep(.v-field__input::placeholder) {
@@ -364,6 +406,9 @@ const resetForm = () => {
   :deep(.v-field:hover) {
     box-shadow: 0 4px 12px rgba(76, 175, 80, 0.1);
   }
+}
+.v-input--horizontal .v-input__prepend {
+  display: none;
 }
 .search-icon {
   color: #4caf50 !important;
