@@ -62,26 +62,26 @@ export const useCategoryStore = defineStore('category', {
                 this.loading = false; // Resets the global loading state
             }
         },
-        async createCategory(payload) {
-            this.loading = true
-            const formData = new FormData();
-            formData.append('name', payload.name);
-            formData.append('type', payload.type);
-            formData.append('is_future', payload.is_future ? 1 : 0);
-            if (payload.icon) {
-                formData.append('icon', payload.icon);
+        // In stores/category.js
+
+async createCategory(formData) { // ✅ Change 'payload' to 'formData'
+    this.loading = true;
+    try {
+        // Just send the formData directly, don't create a new one.
+        await api.post('/category/create-category', formData, {
+            headers: {
+                'Content-Type': 'multipart/form-data'
             }
-            try {
-                await api.post('/category/create-category', formData)
-                return true
-            } catch (err) {
-                this.error = err.response?.data?.message || 'Failed to create category'
-                console.error("Failed to create category:", err.response?.data);
-                return false
-            } finally {
-                this.loading = false
-            }
-        },
+        });
+        return true;
+    } catch (err) {
+        this.error = err.response?.data?.message || 'Failed to create category';
+        console.error("Failed to create category:", err.response?.data);
+        return false;
+    } finally {
+        this.loading = false;
+    }
+},
 
         async updateCategory(id, formData) {
             this.loading = true
