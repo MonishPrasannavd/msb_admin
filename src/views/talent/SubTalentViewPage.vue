@@ -209,6 +209,7 @@
 <script setup>
 import { ref, computed, onMounted, onBeforeUnmount } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
+import { useCategoryStore } from '@/stores/category'; 
 
 // NOTE: Replace with your actual toast notification plugin
 const toast = {
@@ -218,7 +219,7 @@ const toast = {
 
 const route = useRoute();
 const router = useRouter();
-
+const categoryStore = useCategoryStore();
 const talent = ref(null);
 const subTalent = ref(null);
 const participants = ref([]);
@@ -242,30 +243,31 @@ const averageLikes = computed(() => {
   return Math.round(totalLikes.value / participants.value.length);
 });
 
+
 const loadSubTalentData = () => {
   isLoading.value = true;
   const talentId = route.params.talentId;
-  const subTalentId = parseInt(route.params.subTalentId);
+  const subTalentId = parseInt(route.params.subTalentId, 10);
+  const foundTalent = categoryStore.categories.find(t => t.id == talentId);
+  
 
-  const talents = JSON.parse(localStorage.getItem('talents') || '[]');
-  talent.value = talents.find(t => t.id == talentId);
-
-  if (!talent.value) {
+  if (!foundTalent) {
     toast.error('Talent not found');
     router.push('/');
     isLoading.value = false;
     return;
   }
+  talent.value = foundTalent;
+  const foundSubTalent = foundTalent.subcategories?.find(st => st.id == subTalentId);
 
-  const subTalents = JSON.parse(localStorage.getItem(`subTalents_${talentId}`) || '[]');
-  subTalent.value = subTalents.find(st => st.id === subTalentId);
-
-  if (!subTalent.value) {
+  if (!foundSubTalent) {
     toast.error('Sub-talent not found');
     router.push(`/talents/${talentId}`);
     isLoading.value = false;
     return;
   }
+  subTalent.value = foundSubTalent;
+  
   loadParticipants();
   isLoading.value = false;
 };
@@ -371,11 +373,21 @@ const getTimerText = (st) => { /* ... similar logic ... */ };
 const getTimerTextClass = (st) => { /* ... similar logic ... */ };
 
 
-onMounted(() => {
+onMounted(async() => {
+  // Check if the store's categories array is empty.
+  if (categoryStore.categories.length === 0) {
+    console.log("Store is empty, fetching categories before loading data...");
+    // If it's empty, wait for the fetchCategories action to complete.
+    await categoryStore.fetchCategories();
+  }
+  
+  // Now that we are GUARANTEED to have data, run the search.
   loadSubTalentData();
+
+  // The rest of your timer setup can stay the same
   timerInterval.value = setInterval(() => {
     renderTrigger.value++;
-  }, 1000);
+  }, 10000);
 });
 
 onBeforeUnmount(() => {
